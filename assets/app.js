@@ -87,6 +87,7 @@ function cardHTML(it) {
       ${media(it)}
       ${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ""}
       <span class="auth">${sv(I.check, 11, "none", 2)}Authenticated</span>
+      ${it.sample ? '<span class="sample">Sample photo</span>' : ""}
       ${it.sold ? '<span class="sold">SOLD</span>' : ""}
     </a>
     <button class="fav${fav ? " on" : ""}" aria-label="Save ${esc(it.brand)}"></button>

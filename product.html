@@ -33,7 +33,7 @@
   const inBag = () => getCart().includes(it.id);
   const ask = encodeURIComponent(`Hello 1 OF 1, I'm interested in the ${it.brand} ${it.name} (${aed(it.price)}). Ref ${it.id}`);
   box.innerHTML = `
-    <div class="ph">${media(it, true)}${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ""}${it.sold ? '<span class="sold">SOLD</span>' : ""}</div>
+    <div class="ph">${media(it, true)}${it.sample ? '<span class="sample">Sample photo</span>' : ""}${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ""}${it.sold ? '<span class="sold">SOLD</span>' : ""}</div>
     <div class="pdp-info">
       <div class="eyebrow">${esc(it.brand)}</div>
       <h1>${esc(it.name)}</h1>

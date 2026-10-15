@@ -73,7 +73,12 @@ section.shelf{scroll-margin-top:150px}
 .card{position:relative;display:flex;flex-direction:column;min-width:0}
 .ph{position:relative;aspect-ratio:4/5;max-width:100%;background:radial-gradient(120% 90% at 50% 30%,#221f1b,var(--tile));overflow:hidden;display:grid;place-items:center}
 .ph svg.ic{width:46%;height:46%;color:var(--champagne);opacity:.55;transition:transform .8s var(--ease),opacity .4s}
-.ph img{width:100%;height:100%;object-fit:cover;transition:transform .9s var(--ease)}
+.ph:has(img){background:#fff}
+.ph img{width:100%;height:100%;object-fit:contain;transition:transform .9s var(--ease)}
+.ph:has(img) .auth{color:#5c554b}
+.card:has(.ph img) .fav{color:#0d0c0b}
+.card:has(.ph img) .fav.on{color:#a8874f}
+.sample{position:absolute;right:10px;bottom:10px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#7a7266}
 .card:hover .ph svg.ic{transform:scale(1.05);opacity:.75}
 .card:hover .ph img{transform:scale(1.04)}
 .tag{position:absolute;top:10px;left:10px;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--onyx);background:var(--champagne);padding:4px 8px}

@@ -14,8 +14,9 @@
           "price": 58900,
           "was": null,
           "tag": "Full set",
-          "image": "",
-          "sold": false
+          "image": "/images/sample-watch.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "watches-2",
@@ -99,8 +100,9 @@
           "price": 64500,
           "was": null,
           "tag": "New in",
-          "image": "",
-          "sold": false
+          "image": "/images/sample-bag.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "bags-2",
@@ -195,8 +197,9 @@
           "price": 23900,
           "was": 26500,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-bangle.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "jewelry-2",
@@ -269,8 +272,9 @@
           "price": 1450,
           "was": null,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-pump.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "shoes-2",
@@ -343,8 +347,9 @@
           "price": 3900,
           "was": null,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-sunglasses.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "eyewear-2",
@@ -417,8 +422,9 @@
           "price": 2300,
           "was": null,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-wallet.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "slg-2",
@@ -491,8 +497,9 @@
           "price": 5900,
           "was": null,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-coat.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "clothing-2",
@@ -565,8 +572,9 @@
           "price": 2950,
           "was": null,
           "tag": null,
-          "image": "",
-          "sold": false
+          "image": "/images/sample-belt.webp",
+          "sold": false,
+          "sample": true
         },
         {
           "id": "acc-2",
