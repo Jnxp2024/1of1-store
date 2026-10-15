@@ -70,7 +70,7 @@ function draw() {
     return `<div class="order">
       <div class="top"><div><div style="font-size:18px">#${o.id} · ${esc(o.name)}</div><div class="muted" style="font-size:13px">${prettyPhone(o.phone)} · ${when}</div></div><span class="st ${esc(o.status)}">${esc(o.status)}</span></div>
       <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)} · ${aed(i.price)}</li>`).join("")}</ul>
-      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}</div>
+      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}${o.lat != null ? `<br><a href="https://maps.google.com/?q=${o.lat},${o.lng}" target="_blank" rel="noopener" style="color:var(--champagne)">Open pinned location in Maps</a>` : ""}<br>Payment: ${o.payment === "cod" || !o.payment ? "Cash on delivery" : esc(o.payment)}</div>
       <div class="top" style="align-items:center"><div style="font-size:20px;font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? `<span class="muted" style="font-size:13px;margin-left:10px">15% first order · −${aed(o.discount_aed)}</span>` : ""}</div>
         <div class="acts"><a class="btn ghost" style="min-height:40px" target="_blank" rel="noopener" href="https://wa.me/${esc(o.phone)}?text=${encodeURIComponent(`Hello ${o.name}, thank you for your 1 OF 1 order #${o.id}.`)}">WhatsApp</a>
         <select class="in" data-id="${o.id}" aria-label="Status for order ${o.id}">${ST.map(s => `<option value="${s}"${s === o.status ? " selected" : ""}>${s[0].toUpperCase() + s.slice(1)}</option>`).join("")}</select></div></div>

@@ -31,11 +31,31 @@
       <p class="muted" id="curNote" style="margin:-16px 0 0;font-size:13px"></p>
       <label class="f" for="zone">Deliver to
         <select class="in" id="zone"><option value="uae">United Arab Emirates · Same-day</option><option value="intl">Outside the UAE · Within a week</option></select></label>
-      <label class="f" for="addr">Address<textarea class="in" id="addr" rows="2" placeholder="Building, street, area, city (and country if outside the UAE)"></textarea></label>
+
+      <div class="f"><span>Delivery location</span>
+        <div class="seg" role="radiogroup" aria-label="Delivery location">
+          <button type="button" role="radio" aria-checked="true" data-m="live" class="on">Use my live location</button>
+          <button type="button" role="radio" aria-checked="false" data-m="manual">Enter address manually</button>
+        </div>
+      </div>
+      <div id="liveBox" class="locbox">
+        <p class="muted" id="liveMsg" style="margin:0;font-size:14px">We'll pin your exact spot so the driver finds you easily.</p>
+        <button type="button" class="btn ghost" id="getLoc">Share my location</button>
+      </div>
+      <label class="f" for="addr" id="addrLabel"><span id="addrTitle">Building, flat or landmark (optional)</span><textarea class="in" id="addr" rows="2" placeholder="e.g. Marina Gate 1, Apt 2304"></textarea></label>
+      <label class="check" for="saveAddr"><input type="checkbox" id="saveAddr" checked><span>Save this address to my account for future orders</span></label>
+
+      <div class="f"><span>Payment</span>
+        <div class="pay" role="radiogroup" aria-label="Payment method">
+          <label class="pay-opt on"><input type="radio" name="pay" value="cod" checked><span><b>Cash on delivery</b><small>Pay when your piece arrives</small></span></label>
+          <label class="pay-opt off"><input type="radio" name="pay" value="card" disabled><span><b>Credit / debit card</b><small>Coming soon</small></span></label>
+          <label class="pay-opt off"><input type="radio" name="pay" value="applepay" disabled><span><b>Apple Pay</b><small>Coming soon</small></span></label>
+        </div>
+      </div>
       <p class="muted" id="who" style="margin:0;font-size:14px"></p>
       <p class="err" id="err" aria-live="polite"></p>
       <button class="btn wide" id="place">Place order</button>
-      <p class="muted" style="margin:0;font-size:12px;line-height:1.7">UAE: pay by cash or card on delivery. Outside the UAE: we send a secure payment link on WhatsApp. Every order is confirmed with you before it ships.</p>
+      <p class="muted" style="margin:0;font-size:12px;line-height:1.7">Every order is confirmed with you on WhatsApp before it ships.</p>
     </div>
     <div class="panel" id="done" hidden>
       <div class="eyebrow">Order placed</div>
@@ -48,7 +68,44 @@
 </main>
 <footer id="ftr"></footer>
 <script>
-let D, Q = 0;
+let D, Q = 0, MODE = "live", LOC = null;
+const $ = id => document.getElementById(id);
+function setLocMode(m) {
+  MODE = m;
+  document.querySelectorAll(".seg button").forEach(b => { const on = b.dataset.m === m; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
+  $("liveBox").hidden = m !== "live";
+  $("addrTitle").textContent = m === "live" ? "Building, flat or landmark (optional)" : "Full address";
+  $("addr").placeholder = m === "live" ? "e.g. Marina Gate 1, Apt 2304" : "Building, flat, street, area, city (and country if outside the UAE)";
+}
+function paintLoc() {
+  if (!LOC) return;
+  const map = `https://maps.google.com/?q=${LOC.lat},${LOC.lng}`;
+  $("liveMsg").innerHTML = `<span style="color:var(--champagne)">Location pinned</span> · <a href="${map}" target="_blank" rel="noopener" style="color:var(--ivory)">view on map</a>${LOC.acc ? ` · accurate to ~${Math.round(LOC.acc)} m` : ""}`;
+  $("getLoc").textContent = "Update location";
+}
+function getLocation() {
+  const msg = $("liveMsg"), b = $("getLoc");
+  if (!navigator.geolocation) { msg.textContent = "Your browser can't share location. Enter your address manually instead."; setLocMode("manual"); return; }
+  b.disabled = true; b.textContent = "Locating…";
+  navigator.geolocation.getCurrentPosition(p => {
+    LOC = { lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy };
+    b.disabled = false; paintLoc();
+  }, e => {
+    b.disabled = false; b.textContent = "Try again";
+    msg.textContent = e.code === 1 ? "Location access was blocked. Allow it in your browser settings, or enter your address manually." : "Couldn't get your location. Try again or enter your address manually.";
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+}
+async function loadSaved() {
+  if (!getUser()) return;
+  try {
+    const r = await fetch("/api/me", { headers: authHeaders() }); const j = await r.json();
+    const a = j.ok && j.customer.address; if (!a) return;
+    $("zone").value = a.zone === "intl" ? "intl" : "uae";
+    if (a.text) $("addr").value = a.text;
+    if (a.lat != null) { LOC = { lat: a.lat, lng: a.lng }; setLocMode("live"); paintLoc(); $("liveMsg").insertAdjacentHTML("afterbegin", '<span class="muted">Saved address · </span>'); }
+    else setLocMode("manual");
+  } catch {}
+}
 function paintTotals(q, mode) {
   const sums = document.getElementById("sums");
   let html = "";
@@ -84,18 +141,24 @@ function draw() {
 }
 (async () => {
   D = await loadProducts(); renderHeader(); draw();
+  document.querySelectorAll(".seg button").forEach(b => b.onclick = () => setLocMode(b.dataset.m));
+  $("getLoc").onclick = getLocation;
+  setLocMode("live"); loadSaved();
   document.getElementById("list").onclick = e => { const b = e.target.closest(".x"); if (b) { setCart(getCart().filter(x => x !== b.dataset.id)); draw(); } };
   document.getElementById("place").onclick = async () => {
     const u = getUser();
     if (!u) { location.href = "/login.html?next=cart"; return; }
     const its = draw(), err = document.getElementById("err"), btn = document.getElementById("place");
-    const addr = document.getElementById("addr").value.trim();
-    if (addr.length < 5) { err.textContent = "Add your delivery address."; return; }
+    const addr = $("addr").value.trim();
+    if (MODE === "live" && !LOC) { err.textContent = "Tap “Share my location”, or switch to entering your address manually."; return; }
+    if (MODE === "manual" && addr.length < 5) { err.textContent = "Add your full delivery address."; return; }
     const zone = document.getElementById("zone");
     btn.disabled = true; btn.textContent = "Placing…"; err.textContent = "";
     try {
       const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ name: u.name, phone: u.phone, delivery: zone.options[zone.selectedIndex].text, note: addr, items: its.map(i => i.id) }) });
+        body: JSON.stringify({ name: u.name, phone: u.phone, delivery: zone.options[zone.selectedIndex].text, zone: zone.value, note: addr,
+          lat: MODE === "live" && LOC ? LOC.lat : null, lng: MODE === "live" && LOC ? LOC.lng : null,
+          saveAddress: $("saveAddr").checked, payment: "cod", items: its.map(i => i.id) }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || "Server error " + r.status);
       setCart([]);

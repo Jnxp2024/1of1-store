@@ -234,3 +234,22 @@ footer.foot{border-top:1px solid var(--hair);margin-top:24px;padding-block:44px 
 .pf-list li:hover,.pf-list li:focus{background:rgba(201,173,127,.1);outline:0}
 .pf-list li[aria-selected="true"] b{color:var(--champagne)}
 .pf-list .pf-none{color:var(--ivory-dim);cursor:default}
+
+/* checkout: location + payment */
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--hair-2);text-transform:none;letter-spacing:normal}
+.seg button{background:transparent;border:0;color:var(--ivory-dim);font:400 13px var(--font);letter-spacing:.06em;padding:13px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--hair-2)}
+.seg button.on{background:var(--ivory);color:var(--onyx)}
+.locbox{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--hair);background:var(--onyx-2);padding:16px 18px;margin-top:-10px}
+.locbox .btn{min-height:42px;padding:0 18px}
+.check{display:flex;align-items:center;gap:12px;font-size:14px;color:var(--ivory-dim);cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--champagne)}
+.pay{display:flex;flex-direction:column;gap:8px;text-transform:none;letter-spacing:normal}
+.pay-opt{display:flex;align-items:center;gap:14px;border:1px solid var(--hair-2);padding:14px 16px;cursor:pointer}
+.pay-opt input{width:18px;height:18px;accent-color:var(--champagne);flex:none}
+.pay-opt span{display:flex;flex-direction:column;gap:2px}
+.pay-opt b{font-weight:400;font-size:15px;color:var(--ivory)}
+.pay-opt small{font-size:12px;color:var(--ivory-dim)}
+.pay-opt.on{border-color:var(--champagne)}
+.pay-opt.off{opacity:.45;cursor:not-allowed}
+.pay-opt.off small{color:var(--champagne);letter-spacing:.14em;text-transform:uppercase;font-size:10px}

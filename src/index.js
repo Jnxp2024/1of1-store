@@ -54,7 +54,7 @@ async function currentCustomer(request, env) {
   const token = auth.startsWith("Session ") ? auth.slice(8) : "";
   if (!/^[a-f0-9]{48}$/.test(token)) return null;
   return await env.DB.prepare(
-    "SELECT c.id, c.name, c.phone, c.avatar FROM sessions s JOIN customers c ON c.id = s.customer_id WHERE s.token = ? AND s.created_at > datetime('now', '-180 days')"
+    "SELECT c.id, c.name, c.phone, c.avatar, c.address FROM sessions s JOIN customers c ON c.id = s.customer_id WHERE s.token = ? AND s.created_at > datetime('now', '-180 days')"
   ).bind(token).first();
 }
 
@@ -121,7 +121,7 @@ async function me(request, env) {
   const live = results.filter(o => o.status !== "cancelled");
   return json({
     ok: true,
-    customer: { name: c.name, phone: c.phone, avatar: c.avatar || null },
+    customer: { name: c.name, phone: c.phone, avatar: c.avatar || null, address: c.address ? JSON.parse(c.address) : null },
     orders: results,
     spent: live.reduce((s, o) => s + o.total_aed, 0),
     saved: live.reduce((s, o) => s + (o.discount_aed || 0), 0),
@@ -178,12 +178,24 @@ async function createOrder(request, env) {
   if (phone.length < 9 || phone.length > 15) return json({ ok: false, error: "Invalid phone" }, 400);
   if (!ids.length) return json({ ok: false, error: "Bag is empty" }, 400);
 
+  // only cash on delivery for now; card and Apple Pay are "coming soon" in the checkout
+  const payment = "cod";
+  if (b.payment && b.payment !== "cod") return json({ ok: false, error: "Only cash on delivery is available right now." }, 400);
+  let lat = Number(b.lat), lng = Number(b.lng);
+  if (!(Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) { lat = null; lng = null; }
+  else { lat = Math.round(lat * 1e6) / 1e6; lng = Math.round(lng * 1e6) / 1e6; }
+  if (!note && lat === null) return json({ ok: false, error: "Add your delivery address or share your location." }, 400);
+
   const q = await price(request, env, ids, phone);
   if (!q.items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
   const token = crypto.randomUUID().replace(/-/g, "");
   const res = await env.DB.prepare(
-    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token).run();
+    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token, lat, lng, payment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token, lat, lng, payment).run();
+  if (who && b.saveAddress) {
+    const saved = JSON.stringify({ zone: String(b.zone || "uae").slice(0, 10), text: note, lat, lng });
+    await env.DB.prepare("UPDATE customers SET address = ? WHERE id = ?").bind(saved, who.id).run();
+  }
   return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total });
 }
 
@@ -207,7 +219,7 @@ async function myOrders(request, env) {
 
 async function listOrders(request, env) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status FROM orders ORDER BY id DESC LIMIT 500").all();
+  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment FROM orders ORDER BY id DESC LIMIT 500").all();
   return json({ ok: true, orders: results });
 }
 
