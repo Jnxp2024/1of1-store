@@ -20,7 +20,8 @@ const store = {
 const getCart = () => store.get("oo_cart", []);
 const setCart = c => { store.set("oo_cart", c); paintCount(); };
 const getFavs = () => store.get("oo_favs", []);
-const getUser = () => store.get("oo_user", null);
+const getUser = () => { const u = store.get("oo_user", null); return u && u.token ? u : null; };
+const authHeaders = () => { const u = getUser(); return u ? { Authorization: "Session " + u.token } : {}; };
 const setUser = u => store.set("oo_user", u);
 
 /* ---------- formatting ---------- */
@@ -99,6 +100,78 @@ function cardHTML(it) {
   </article>`;
 }
 
+
+/* ---------- smart search: brands, nicknames, categories, typos ---------- */
+const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").trim();
+const ALIASES = {
+  lv: "louis vuitton", ap: "audemars piguet", rm: "richard mille", vca: "van cleef and arpels", ysl: "saint laurent",
+  bv: "bottega veneta", pp: "patek philippe", patek: "patek philippe", vc: "vacheron constantin", als: "a lange and sohne",
+  cc: "chanel", gg: "gucci", dior: "christian dior", cl: "christian louboutin", louboutin: "christian louboutin", hermes: "hermes",
+  bag: "handbags", bags: "handbags", handbag: "handbags", purse: "handbags", tote: "handbags", clutch: "handbags", birkin: "birkin hermes", kelly: "kelly hermes",
+  watch: "watches", timepiece: "watches", rolly: "rolex", sub: "submariner", gmt: "gmt master", dj: "datejust", daytona: "daytona rolex",
+  ring: "jewellery ring", necklace: "jewellery necklace", bracelet: "jewellery bracelet", earring: "jewellery earrings", earrings: "jewellery earrings", jewelry: "jewellery", gold: "gold jewellery",
+  shoe: "shoes", sneaker: "shoes sneaker", sneakers: "shoes sneaker", heels: "shoes heel", heel: "shoes heel", loafer: "shoes loafer", loafers: "shoes loafer",
+  glasses: "sunglasses", shades: "sunglasses", eyewear: "sunglasses",
+  wallet: "wallets small leather", cardholder: "card holder wallets", card: "card holder",
+  coat: "clothing coat", jacket: "clothing jacket", blazer: "clothing blazer", dress: "clothing dress", jumper: "clothing sweater", sweater: "clothing sweater",
+  belt: "belts", scarf: "scarves carre silk", scarves: "belts and scarves"
+};
+function lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (cur[j] < best) best = cur[j];
+    }
+    if (best > max) return max + 1;
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function docOf(it) {
+  if (it._doc) return it._doc;
+  const text = norm([it.brand, it.name, it.cat.title, it.cat.subtitle, it.tag, it.condition, ...(it.keywords || [])].join(" "));
+  it._doc = { text, words: [...new Set(text.split(" "))] };
+  return it._doc;
+}
+function tokenScore(tok, doc) {
+  let best = 0;
+  for (const w of doc.words) {
+    if (w === tok) return 3;
+    if (w.startsWith(tok) && tok.length >= 2) best = Math.max(best, 2.2);
+    else if (tok.length >= 3 && w.includes(tok)) best = Math.max(best, 1.6);
+    else if (tok.length >= 4) {
+      const max = tok.length >= 7 ? 2 : 1;
+      if (lev(tok, w, max) <= max) best = Math.max(best, 1.3);
+      else if (w.length > tok.length && lev(tok, w.slice(0, tok.length), 1) <= 1) best = Math.max(best, 1);
+    }
+  }
+  return best;
+}
+// Returns { results, similar }. Every product in products.json is searchable automatically.
+function searchProducts(data, query) {
+  const raw = norm(query); if (!raw) return { results: [], similar: [] };
+  const groups = raw.split(" ").filter(Boolean).map(t => [t, ...(ALIASES[t] ? norm(ALIASES[t]).split(" ") : [])]);
+  const all = data.categories.flatMap(c => c.items);
+  const scored = all.map(it => {
+    const doc = docOf(it); let total = 0, hit = 0;
+    for (const g of groups) { const s = Math.max(...g.map(t => tokenScore(t, doc))); if (s > 0) hit++; total += s; }
+    if (doc.text.includes(raw)) total += 2;
+    return { it, total, hit };
+  }).filter(x => x.total > 0).sort((a, b) => (b.hit - a.hit) || (b.total - a.total) || (a.it.sold - b.it.sold));
+  const results = scored.filter(x => x.hit === groups.length).map(x => x.it);
+  let similar = scored.filter(x => x.hit < groups.length).map(x => x.it);
+  const seed = results[0] || similar[0];
+  if (seed) {
+    const more = all.filter(it => !results.includes(it) && !similar.includes(it) && (it.brand === seed.brand || it.cat === seed.cat));
+    similar = [...similar, ...more];
+  }
+  if (!results.length && !similar.length) similar = all.filter(it => !it.sold).slice(0, 8);
+  return { results, similar: similar.filter(it => !results.includes(it)).slice(0, 12) };
+}
+
 /* ---------- chrome: header + footer ---------- */
 function renderHeader(opts = {}) {
   const u = getUser();
@@ -109,7 +182,7 @@ function renderHeader(opts = {}) {
   <div class="gut">
     <div class="bar">
       <a class="brand" href="/" aria-label="1 OF 1 home">${MONO}<span>1 OF 1</span></a>
-      ${opts.search ? `<label class="search" for="q">${sv(I.search, 16)}<input id="q" type="search" placeholder="Search Rolex, Hermès, Cartier…" autocomplete="off"></label>` : '<div style="flex:1"></div>'}
+      <form class="search" role="search" id="qf" action="/"><label for="q" style="display:flex;color:inherit">${sv(I.search, 16)}</label><input id="q" name="q" type="search" placeholder="Search Rolex, Birkin, gold bracelet…" autocomplete="off" enterkeyhint="search"></form>
       <div class="tools">
         <select class="cur" id="cur" aria-label="Currency">${Object.keys(STORE.rates).map(c => `<option${c === getCur() ? " selected" : ""}>${c}</option>`).join("")}</select>
         <a class="who" href="/login.html">${u ? "My account" : "Sign in"}</a>
@@ -136,8 +209,8 @@ function maybeOffer() {
     <div class="eyebrow">Welcome to 1 OF 1</div>
     <div class="big">15<span>%</span></div>
     <h2 id="offerT">Off your first order</h2>
-    <p>Sign in with your name and mobile number. Your discount is applied automatically at checkout.</p>
-    <a class="btn" href="/login.html">Sign in for 15% off</a>
+    <p>Create your account with your mobile number. Your discount is applied automatically at checkout.</p>
+    <a class="btn" href="/login.html">Create account · Get 15% off</a>
     <button class="later">Maybe later</button>
   </div>`;
   const close = () => bg.remove();
@@ -170,6 +243,8 @@ function bindCards(root) {
     const b = card.querySelector(".fav");
     b.innerHTML = sv(I.heart, 18, b.classList.contains("on") ? "currentColor" : "none");
   });
+  if (root._favBound) return;
+  root._favBound = true;
   root.addEventListener("click", e => {
     const b = e.target.closest(".fav"); if (!b) return;
     e.preventDefault();

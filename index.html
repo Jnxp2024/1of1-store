@@ -23,6 +23,11 @@
   </div>
 </div>
 <main class="gut" id="main"><p class="muted">Loading pieces…</p></main>
+<section class="gut" id="results" hidden style="padding-block:28px 72px;display:flex;flex-direction:column;gap:22px">
+  <div class="head" style="margin-bottom:0"><div><h2 id="rTitle"></h2><small id="rSub"></small></div><button class="all" id="rClear" style="background:none;border:0;cursor:pointer">Clear search</button></div>
+  <div class="grid" id="rGrid"></div>
+  <div id="simWrap" hidden><div class="head"><div><h2 style="font-size:22px">Similar pieces</h2><small>You might also like</small></div></div><div class="grid" id="sGrid"></div></div>
+</section>
 <footer id="ftr"></footer>
 <script>
 (async () => {
@@ -44,11 +49,26 @@
     row.addEventListener("scroll", upd, { passive: true }); requestAnimationFrame(upd); addEventListener("resize", upd);
   });
   bindCards(main);
-  document.getElementById("q").addEventListener("input", e => {
-    const q = e.target.value.toLowerCase().trim();
-    main.querySelectorAll(".card").forEach(c => c.hidden = q && !c.textContent.toLowerCase().includes(q));
-    main.querySelectorAll(".shelf").forEach(s => s.hidden = q && !s.querySelector(".card:not([hidden])"));
-  });
+  const q = document.getElementById("q"), intro = document.querySelector(".intro").parentElement, res = document.getElementById("results");
+  const run = () => {
+    const term = q.value.trim();
+    main.hidden = !!term; intro.hidden = !!term; res.hidden = !term;
+    if (!term) return;
+    const { results, similar } = searchProducts(d, term);
+    document.getElementById("rTitle").textContent = results.length ? `Results for “${term}”` : `No exact match for “${term}”`;
+    document.getElementById("rSub").textContent = results.length ? `${results.length} ${results.length === 1 ? "piece" : "pieces"}` : "Here are pieces you might like. Or ask us to source it.";
+    const g = document.getElementById("rGrid");
+    g.innerHTML = results.length ? results.map(cardHTML).join("") : `<div class="empty" style="grid-column:1/-1;padding:28px 16px">We don't have that listed yet, but we can find it.<a class="btn" target="_blank" rel="noopener" href="https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent("Hello 1 OF 1, I'm looking for: " + term)}">Ask us to source it</a></div>`;
+    const sg = document.getElementById("sGrid");
+    sg.innerHTML = similar.map(cardHTML).join("");
+    document.getElementById("simWrap").hidden = !similar.length;
+    bindCards(g); bindCards(sg);
+  };
+  let t; q.addEventListener("input", () => { clearTimeout(t); t = setTimeout(run, 120); });
+  document.getElementById("qf").addEventListener("submit", e => { e.preventDefault(); run(); q.blur(); });
+  document.getElementById("rClear").onclick = () => { q.value = ""; run(); q.focus(); };
+  const init = new URLSearchParams(location.search).get("q");
+  if (init) { q.value = init; run(); }
 })();
 </script>
 </body>

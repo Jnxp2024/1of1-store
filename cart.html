@@ -48,7 +48,7 @@ function paintTotals(q, mode) {
   const sums = document.getElementById("sums");
   let html = "";
   if (q.discount > 0) html = `<div class="sumline"><span>Subtotal</span><span>${money(q.subtotal)}</span></div><div class="sumline disc"><span>First order · 15% off</span><span>− ${money(q.discount)}</span></div>`;
-  else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login.html?next=cart" style="color:var(--champagne)">Sign in</a> and it's applied automatically.</div></div>`;
+  else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login.html?next=cart" style="color:var(--champagne)">Create an account or sign in</a> and it's applied automatically.</div></div>`;
   sums.innerHTML = html;
   document.getElementById("total").textContent = money(q.total);
   document.getElementById("curNote").textContent = getCur() !== "AED" ? `Approximate. You pay ${aed(q.total)}.` : "";
@@ -56,7 +56,7 @@ function paintTotals(q, mode) {
 async function quote(u, its) {
   const my = ++Q;
   try {
-    const r = await fetch("/api/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: u.phone, items: its.map(i => i.id) }) });
+    const r = await fetch("/api/quote", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ phone: u.phone, items: its.map(i => i.id) }) });
     const j = await r.json();
     if (my === Q && j.ok) paintTotals(j, "done");
   } catch {}
@@ -73,8 +73,8 @@ function draw() {
   const u = getUser();
   paintTotals({ subtotal: sum, discount: 0, total: sum }, u ? "checking" : "signin");
   if (u && its.length) quote(u, its);
-  document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login.html" style="color:var(--champagne)">change</a>` : "Next, sign in with your name and number.";
-  document.getElementById("place").textContent = u ? "Place order" : "Sign in to order";
+  document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login.html" style="color:var(--champagne)">change</a>` : "Next, sign in or create your account. It takes a few seconds.";
+  document.getElementById("place").textContent = u ? "Place order" : "Sign in or create account to order";
   return its;
 }
 (async () => {
@@ -89,7 +89,7 @@ function draw() {
     const zone = document.getElementById("zone");
     btn.disabled = true; btn.textContent = "Placing…"; err.textContent = "";
     try {
-      const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" },
+      const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ name: u.name, phone: u.phone, delivery: zone.options[zone.selectedIndex].text, note: addr, items: its.map(i => i.id) }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || "Server error " + r.status);

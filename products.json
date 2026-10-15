@@ -182,80 +182,6 @@
       ]
     },
     {
-      "id": "jewelry",
-      "title": "Jewellery",
-      "subtitle": "Certified gold",
-      "icon": "jewel",
-      "items": [
-        {
-          "id": "jewelry-1",
-          "brand": "Cartier",
-          "name": "Love Bracelet 18k Yellow",
-          "condition": "Excellent",
-          "price": 23900,
-          "was": 26500,
-          "tag": null,
-          "image": "",
-          "sold": false
-        },
-        {
-          "id": "jewelry-2",
-          "brand": "Van Cleef & Arpels",
-          "name": "Vintage Alhambra Necklace",
-          "condition": "Very good",
-          "price": 14200,
-          "was": null,
-          "tag": "New in",
-          "image": "",
-          "sold": false
-        },
-        {
-          "id": "jewelry-3",
-          "brand": "Bulgari",
-          "name": "Serpenti Viper Ring",
-          "condition": "Excellent",
-          "price": 9800,
-          "was": null,
-          "tag": null,
-          "image": "",
-          "sold": false
-        },
-        {
-          "id": "jewelry-4",
-          "brand": "Tiffany & Co.",
-          "name": "T Wire Bracelet",
-          "condition": "Good",
-          "price": 4100,
-          "was": null,
-          "tag": null,
-          "image": "",
-          "sold": false
-        },
-        {
-          "id": "jewelry-5",
-          "brand": "Cartier",
-          "name": "Juste un Clou Ring",
-          "condition": "Excellent",
-          "price": 8600,
-          "was": null,
-          "tag": null,
-          "image": "",
-          "sold": false
-        },
-        {
-          "id": "jewelry-6",
-          "brand": "Chaumet",
-          "name": "Liens Earrings",
-          "condition": "Very good",
-          "price": 7300,
-          "was": null,
-          "tag": null,
-          "image": "",
-          "sold": false
-        }
-      ]
-    },
-    {
       "id": "shoes",
       "title": "Shoes",
       "subtitle": "Sizes 35 to 46",
@@ -324,6 +250,80 @@
           "price": 2400,
           "was": null,
           "tag": "New in",
+          "image": "",
+          "sold": false
+        }
+      ]
+    },
+    {
+      "id": "jewelry",
+      "title": "Jewellery",
+      "subtitle": "Certified gold",
+      "icon": "jewel",
+      "items": [
+        {
+          "id": "jewelry-1",
+          "brand": "Cartier",
+          "name": "Love Bracelet 18k Yellow",
+          "condition": "Excellent",
+          "price": 23900,
+          "was": 26500,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-2",
+          "brand": "Van Cleef & Arpels",
+          "name": "Vintage Alhambra Necklace",
+          "condition": "Very good",
+          "price": 14200,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-3",
+          "brand": "Bulgari",
+          "name": "Serpenti Viper Ring",
+          "condition": "Excellent",
+          "price": 9800,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-4",
+          "brand": "Tiffany & Co.",
+          "name": "T Wire Bracelet",
+          "condition": "Good",
+          "price": 4100,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-5",
+          "brand": "Cartier",
+          "name": "Juste un Clou Ring",
+          "condition": "Excellent",
+          "price": 8600,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-6",
+          "brand": "Chaumet",
+          "name": "Liens Earrings",
+          "condition": "Very good",
+          "price": 7300,
+          "was": null,
+          "tag": null,
           "image": "",
           "sold": false
         }
