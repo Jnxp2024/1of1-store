@@ -27,8 +27,8 @@
     <div class="pad-copy">
       <span class="eyebrow">1 OF 1 · Paddock <i class="soon">Coming soon</i></span>
       <h1>The paddock, <em>not the grandstand.</em></h1>
-      <p>Paddock Club, team suites and pit-lane garages for the rest of the 2026 season. Tell us the race, we hold your place.</p>
-      <div class="pad-cta"><a class="btn" id="heroWa" target="_blank" rel="noopener">Register interest</a><a class="btn ghost" href="#races">See the races</a></div>
+      <p>Paddock Club, team suites and pit-lane garages for the Abu Dhabi Grand Prix, 4–6 December 2026. UAE only for now. Register and we hold your place.</p>
+      <div class="pad-cta"><a class="btn" id="heroWa" target="_blank" rel="noopener">Register interest</a><a class="btn ghost" href="#races">See the race</a></div>
       <div class="pad-count" id="count"></div>
     </div>
     <figure class="pad-map" aria-label="Yas Marina Circuit layout">
@@ -38,7 +38,7 @@
   </section>
 
   <section id="races" class="pad-sec">
-    <div class="head"><div><h2>The 2026 run-in</h2><small>Six races left · tickets coming soon</small></div></div>
+    <div class="head"><div><h2>Available in the UAE only</h2><small>Abu Dhabi Grand Prix · December 2026 · tickets coming soon</small></div></div>
     <div class="races" id="raceGrid"></div>
   </section>
 
@@ -48,15 +48,14 @@
   </section>
 
   <section class="pad-sec pad-form">
-    <div><h2>Be first in line</h2><p class="muted">Pick a race and how close you want to be. We'll message you on WhatsApp as soon as passes open.</p></div>
+    <div><h2>Be first in line</h2><p class="muted">Abu Dhabi Grand Prix, December 2026. Pick how close you want to be and we'll message you on WhatsApp as soon as passes open.</p></div>
     <div class="pad-pick">
-      <label class="f" for="pRace">Race<select class="in" id="pRace"></select></label>
       <label class="f" for="pTier">Access<select class="in" id="pTier"></select></label>
       <a class="btn" id="pGo" target="_blank" rel="noopener">Register on WhatsApp</a>
     </div>
   </section>
 
-  <p class="pad-legal">1 OF 1 is an independent reseller and is not affiliated with Formula 1 or any team. Circuit layouts are for illustration. Race dates follow the published 2026 calendar and may change.</p>
+  <p class="pad-legal">1 OF 1 is an independent reseller and is not affiliated with Formula 1 or any team. Circuit layouts are for illustration. Race dates follow the published 2026 calendar and may change. Paddock access is currently offered for the Abu Dhabi Grand Prix only.</p>
 </main>
 <footer id="ftr"></footer>
 <script>
@@ -71,7 +70,7 @@ const day = s => new Date(s + "T12:00:00Z");
 const fmt = s => day(s).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 const wa = t => `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(t)}`;
 const upcoming = PADDOCK_RACES.filter(r => day(r.date) >= new Date(Date.now() - 864e5)).sort((a, b) => a.date.localeCompare(b.date));
-const races = upcoming.length ? upcoming : PADDOCK_RACES;
+const races = PADDOCK_RACES.filter(r => r.id === "ae-2009");
 
 (async () => {
   const D = await loadProducts();
@@ -95,12 +94,12 @@ document.getElementById("count").innerHTML = dd > 0 ? `<b>${dd}</b><span>days to
 document.getElementById("heroWa").href = wa("Hello 1 OF 1, I'm interested in paddock tickets for the Abu Dhabi Grand Prix.");
 
 document.getElementById("raceGrid").innerHTML = races.map((r, i) => `
-  <article class="race" style="--i:${i}">
+  <article class="race race-one" style="--i:${i}">
     <div class="race-map"><svg viewBox="${r.vb}" aria-hidden="true"><path d="${r.d}" class="trk-base"/><path d="${r.d}" class="trk-line" pathLength="1"/></svg>
       <span class="soon">Coming soon</span></div>
     <div class="race-info">
       <div class="race-date"><b>${fmt(r.date)}</b><span>2026</span></div>
-      <div><h3>${esc(r.gp)}</h3><p>${esc(r.circuit)} · ${esc(r.city)}</p>${r.note ? `<small>${esc(r.note)}</small>` : ""}</div>
+      <div><h3>${esc(r.gp)}</h3><p>${esc(r.circuit)} · ${esc(r.city)}</p><p>Race weekend 4–6 December 2026</p><small>UAE only · season finale · twilight race</small></div>
     </div>
     <a class="race-cta" target="_blank" rel="noopener" href="${wa(`Hello 1 OF 1, I'm interested in paddock tickets for the ${r.gp} (${fmt(r.date)} 2026).`)}">Notify me</a>
   </article>`).join("");
@@ -112,14 +111,13 @@ document.getElementById("tiers").innerHTML = TIERS.map((t, i) => `
     <ul>${t.inc.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
   </article>`).join("");
 
-const pr = document.getElementById("pRace"), pt = document.getElementById("pTier"), go = document.getElementById("pGo");
-pr.innerHTML = races.map(r => `<option value="${r.id}">${esc(r.gp)} · ${fmt(r.date)}</option>`).join("");
+const pt = document.getElementById("pTier"), go = document.getElementById("pGo");
 pt.innerHTML = TIERS.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("") + `<option value="any">Not sure yet, advise me</option>`;
 const sync = () => {
-  const r = races.find(x => x.id === pr.value), t = TIERS.find(x => x.id === pt.value);
+  const r = races[0], t = TIERS.find(x => x.id === pt.value);
   go.href = wa(`Hello 1 OF 1, please register my interest: ${r.gp} (${fmt(r.date)} 2026), ${t ? t.name : "advise me on the best access"}.`);
 };
-pr.onchange = pt.onchange = sync; sync();
+pt.onchange = sync; sync();
 </script>
 </body>
 </html>
