@@ -460,3 +460,4 @@ label.mini .in{width:auto;font-size:14px;letter-spacing:normal;text-transform:no
 .faq details[open] summary::after{transform:rotate(45deg)}
 .faq details p{margin:0 0 16px;color:var(--ivory-dim);line-height:1.7;font-size:14px}
 @media (max-width:760px){.about{grid-template-columns:1fr;gap:32px;padding-block:48px}}
+.kicker{font-size:12px!important;letter-spacing:.24em;text-transform:uppercase;color:var(--champagne)!important;margin-top:-6px!important}

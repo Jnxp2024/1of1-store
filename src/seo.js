@@ -32,7 +32,15 @@ const HOME_FAQ = [
   ["How fast is delivery in the UAE?", "Same-day delivery across the UAE. Worldwide orders arrive within a week."],
   ["Can you find a piece you don't have listed?", "Yes. Show us the watch, bag or item you want and we find it, often in under a day. Message us on WhatsApp at +971 56 242 2121."],
   ["How do I pay?", "Pay on delivery, in cash or by card / online payment at the door. Card and Apple Pay checkout online are coming soon."],
+  ["Do you sell F1 tickets?", "Yes. Pre-book F1 Paddock Club, F1 Garage and team suite tickets for the Abu Dhabi Grand Prix, 4–6 December 2026. Send us an inquiry and we hold your ticket."],
   ["Is there a discount on my first order?", "Yes. Create an account and get 15% off your first order, applied automatically at checkout."]
+];
+
+const PADDOCK_FAQ = [
+  ["Do you sell F1 tickets for the Abu Dhabi Grand Prix 2026?", "Yes. We offer pre-booking for Abu Dhabi Grand Prix 2026 hospitality at Yas Marina Circuit, 4–6 December 2026: F1 Paddock Club, F1 Garage, Team Paddock Club suites, Champions Club and circuit hospitality."],
+  ["How does pre-booking work?", "Send us an inquiry on WhatsApp with the pass you want and how many guests. We hold your ticket for you and confirm the moment it's released."],
+  ["What is the F1 Paddock Club?", "The Paddock Club is hospitality above the team garages, looking down on the grid and pit lane, with fine dining, an open bar, a pit-lane walk and a guided paddock tour."],
+  ["Is it available outside the UAE?", "For now our paddock access is for the Abu Dhabi Grand Prix in the UAE only."]
 ];
 
 const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -63,7 +71,7 @@ const ORG = {
   url: SITE + "/",
   logo: SITE + "/favicon-512.png",
   image: OG_IMAGE,
-  description: "Authentic pre-owned luxury in Dubai: watches, designer bags, shoes, jewellery, travel and home. One-of-one pieces, same-day UAE delivery, worldwide shipping.",
+  description: "Authentic pre-owned luxury in Dubai: watches, designer bags, shoes, jewellery, travel and home, plus F1 Paddock Club tickets for the Abu Dhabi Grand Prix. One-of-one pieces, same-day UAE delivery, worldwide shipping.",
   email: "info@1of1.ae",
   telephone: "+971562422121",
   areaServed: [{ "@type": "Country", name: "United Arab Emirates" }, "Worldwide"],
@@ -81,7 +89,7 @@ async function seoFor(url, request, env) {
     const { cats } = await catalog(request, env);
     return {
       title: "1 OF 1 | Pre-Owned Luxury Watches & Designer Bags in Dubai",
-      desc: "Shop authentic 1 of 1 pre-owned luxury in Dubai: Rolex, Hermès, Chanel, Louis Vuitton and more. Best-condition pieces checked by hand. Same-day UAE delivery, worldwide shipping.",
+      desc: "Shop authentic 1 of 1 pre-owned luxury in Dubai: Rolex, Hermès, Chanel, Louis Vuitton and more, plus F1 Paddock Club tickets for Abu Dhabi. Best-condition pieces, same-day UAE delivery, worldwide shipping.",
       canonical: SITE + "/",
       ld: [
         ORG,
@@ -147,11 +155,26 @@ async function seoFor(url, request, env) {
   }
 
   if (key === "paddock") {
+    const canon = SITE + "/paddock";
     return {
-      title: "F1 Paddock Club Tickets Abu Dhabi 2026 | Pre-Book | 1 OF 1",
-      desc: "Pre-book Abu Dhabi Grand Prix 2026 hospitality: Paddock Club, F1 Garage, team suites and Champions Club at Yas Marina, 4–6 December. Send an inquiry and we hold your ticket.",
-      canonical: SITE + "/paddock",
-      ld: [{ "@type": "WebPage", name: "Abu Dhabi Grand Prix 2026 paddock tickets", url: SITE + "/paddock", isPartOf: { "@id": SITE + "/#site" } }]
+      title: "Abu Dhabi Grand Prix 2026 F1 Tickets & Paddock Club | Pre-Book | 1 OF 1",
+      desc: "Pre-book F1 tickets for the Abu Dhabi Grand Prix 2026 at Yas Marina, 4–6 Dec: F1 Paddock Club, F1 Garage, team suites, Champions Club and hospitality. Send an inquiry, we hold your ticket.",
+      canonical: canon,
+      ld: [
+        { "@type": "WebPage", "@id": canon + "#page", name: "Abu Dhabi Grand Prix 2026 F1 tickets and Paddock Club", url: canon, isPartOf: { "@id": SITE + "/#site" } },
+        { "@type": "SportsEvent", name: "Formula 1 Abu Dhabi Grand Prix 2026: Paddock Club & hospitality", sport: "Formula 1",
+          startDate: "2026-12-04", endDate: "2026-12-06",
+          eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+          location: { "@type": "Place", name: "Yas Marina Circuit", address: { "@type": "PostalAddress", streetAddress: "Yas Island", addressLocality: "Abu Dhabi", addressCountry: "AE" } },
+          image: [OG_IMAGE], url: canon,
+          description: "Pre-book F1 Paddock Club, F1 Garage, Team Paddock Club suites, Champions Club and circuit hospitality for the Abu Dhabi Grand Prix 2026.",
+          offers: { "@type": "AggregateOffer", url: canon, priceCurrency: "AED", availability: "https://schema.org/PreOrder", seller: { "@id": SITE + "/#store" },
+            offerCount: 5 } },
+        { "@type": "FAQPage", mainEntity: PADDOCK_FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+        { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: BRAND, item: SITE + "/" },
+          { "@type": "ListItem", position: 2, name: "F1 Paddock tickets", item: canon }] }
+      ]
     };
   }
   return null;
