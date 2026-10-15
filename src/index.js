@@ -281,14 +281,28 @@ async function payCheck(request, env, id) {
   if (!o) return json({ ok: false, error: "Not found" }, 404);
   if (o.paid) return json({ ok: true, paid: true });
   if (o.crypto_coin !== "usdt-trc20") return json({ ok: true, paid: false, manual: true });
+  const tx = await settleTrc20(env, o);
+  return json({ ok: true, paid: !!tx, tx: tx || undefined });
+}
+
+// Looks on-chain for this order's exact USDT amount; marks it paid if found.
+async function settleTrc20(env, o) {
   const since = Date.parse(o.created_at.replace(" ", "T") + "Z") - 5 * 60 * 1000;
   let tx = null;
-  try { tx = await findTrc20(o.crypto_address, o.crypto_amount, since); } catch {}
-  if (!tx) return json({ ok: true, paid: false });
-  const dup = await env.DB.prepare("SELECT id FROM orders WHERE crypto_tx = ? AND id != ?").bind(tx, id).first();
-  if (dup) return json({ ok: true, paid: false });
-  await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = 'crypto', paid_at = datetime('now'), crypto_tx = ? WHERE id = ?").bind(tx, id).run();
-  return json({ ok: true, paid: true, tx });
+  try { tx = await findTrc20(o.crypto_address, o.crypto_amount, since, env.TRONGRID_API_KEY); } catch {}
+  if (!tx) return null;
+  const dup = await env.DB.prepare("SELECT id FROM orders WHERE crypto_tx = ? AND id != ?").bind(tx, o.id).first();
+  if (dup) return null;
+  await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = 'crypto', paid_at = datetime('now'), crypto_tx = ? WHERE id = ? AND paid = 0").bind(tx, o.id).run();
+  return tx;
+}
+
+// Runs every few minutes: checks every unpaid USDT (TRC20) order from the last 3 days.
+async function sweepCrypto(env) {
+  const { results } = await env.DB.prepare(
+    "SELECT * FROM orders WHERE payment = 'crypto' AND crypto_coin = 'usdt-trc20' AND paid = 0 AND status != 'cancelled' AND created_at > datetime('now', '-3 days') LIMIT 50"
+  ).all();
+  for (const o of results) await settleTrc20(env, o);
 }
 
 // Customer's own orders. The browser keeps each order's private token from checkout,
@@ -338,6 +352,9 @@ async function setStatus(request, env, id) {
 }
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(sweepCrypto(env));
+  },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {

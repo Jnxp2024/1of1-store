@@ -58,9 +58,11 @@ export async function quoteCrypto(id, totalAed) {
 }
 
 // Looks for a matching USDT (TRC20) transfer to our address since the order was placed.
-export async function findTrc20(address, amount, sinceMs) {
-  const url = `https://api.trongrid.io/v1/accounts/${address}/transactions/trc20?only_to=true&limit=100&contract_address=${USDT_TRC20_CONTRACT}&min_timestamp=${sinceMs}`;
-  const r = await fetch(url, { headers: { accept: "application/json" } });
+export async function findTrc20(address, amount, sinceMs, apiKey) {
+  const url = `https://api.trongrid.io/v1/accounts/${address}/transactions/trc20?only_to=true&only_confirmed=true&limit=200&contract_address=${USDT_TRC20_CONTRACT}&min_timestamp=${sinceMs}`;
+  const headers = { accept: "application/json" };
+  if (apiKey) headers["TRON-PRO-API-KEY"] = apiKey;
+  const r = await fetch(url, { headers });
   if (!r.ok) return null;
   const d = await r.json();
   const want = BigInt(Math.round(Number(amount) * 1e6));
