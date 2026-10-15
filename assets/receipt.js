@@ -52,7 +52,7 @@ async function downloadReceipt(o, btn) {
     txt("1 OF 1", L, y, { s: 26, b: true });
     txt("RECEIPT", R, y - 8, { s: 11, b: true, a: "right", c: gold });
     txt("Order #" + o.id, R, y + 8, { s: 10, a: "right" });
-    y += 18; txt("Pre-loved luxury  ·  1of1.ae", L, y, { s: 9, c: dim });
+    y += 18; txt("One of one  ·  1of1.ae", L, y, { s: 9, c: dim });
     y += 24; rule(y);
 
     // meta

@@ -15,14 +15,14 @@ const PRIVATE = new Set(["cart", "login", "admin", "404"]);
 
 // Words people actually type, per category (used in titles and descriptions).
 const CAT_SEO = {
-  watches: { h: "Pre-Owned Luxury Watches in Dubai", k: "pre-owned Rolex, Patek Philippe, Audemars Piguet and Richard Mille with box and papers" },
-  bags: { h: "Pre-Owned Designer Bags in Dubai", k: "preloved Hermès Birkin and Kelly, Chanel, Louis Vuitton and Dior handbags" },
-  shoes: { h: "Pre-Owned Designer Shoes & Sneakers in Dubai", k: "designer heels, loafers and sneakers from Louboutin, Dior, Hermès and Gucci" },
-  travel: { h: "Luxury Travel Bags & Luggage in Dubai", k: "pre-owned Louis Vuitton Keepall, Rimowa, Goyard luggage, duffles and backpacks" },
-  jewelry: { h: "Pre-Owned Fine Jewellery in Dubai", k: "Cartier Love and Juste un Clou, Van Cleef & Arpels Alhambra and Bulgari gold jewellery" },
-  eyewear: { h: "Designer Sunglasses in Dubai", k: "pre-owned designer sunglasses with case" },
-  slg: { h: "Designer Wallets & Card Holders in Dubai", k: "pre-owned designer wallets, card holders and small leather goods" },
-  clothing: { h: "Pre-Owned Designer Clothing in Dubai", k: "preloved designer coats, jackets and ready-to-wear" },
+  watches: { h: "Luxury Watches in Dubai", k: "one-of-one Rolex, Patek Philippe, Audemars Piguet and Richard Mille with box and papers" },
+  bags: { h: "Designer Bags in Dubai", k: "one-of-one Hermès Birkin and Kelly, Chanel, Louis Vuitton and Dior handbags" },
+  shoes: { h: "Designer Shoes & Sneakers in Dubai", k: "designer heels, loafers and sneakers from Louboutin, Dior, Hermès and Gucci" },
+  travel: { h: "Luxury Travel Bags & Luggage in Dubai", k: "Louis Vuitton Keepall, Rimowa, Goyard luggage, duffles and backpacks" },
+  jewelry: { h: "Fine Jewellery in Dubai", k: "Cartier Love and Juste un Clou, Van Cleef & Arpels Alhambra and Bulgari gold jewellery" },
+  eyewear: { h: "Designer Sunglasses in Dubai", k: "designer sunglasses with case" },
+  slg: { h: "Designer Wallets & Card Holders in Dubai", k: "designer wallets, card holders and small leather goods" },
+  clothing: { h: "Designer Clothing in Dubai", k: "designer coats, jackets and ready-to-wear" },
   acc: { h: "Designer Belts & Scarves in Dubai", k: "Hermès belts, silk carrés and designer scarves" },
   home: { h: "Luxury Home Décor in Dubai", k: "Hermès blankets and tableware, Baccarat and Lalique crystal, Fornasetti" }
 };
@@ -71,7 +71,7 @@ const ORG = {
   url: SITE + "/",
   logo: SITE + "/favicon-512.png",
   image: OG_IMAGE,
-  description: "Authentic pre-owned luxury in Dubai: watches, designer bags, shoes, jewellery, travel and home, plus F1 Paddock Club tickets for the Abu Dhabi Grand Prix. One-of-one pieces, same-day UAE delivery, worldwide shipping.",
+  description: "One-of-one luxury in Dubai you won't find anywhere else: watches, designer bags, shoes, jewellery, travel and home, plus F1 Paddock Club tickets for the Abu Dhabi Grand Prix. One-of-one pieces, same-day UAE delivery, worldwide shipping.",
   email: "info@1of1.ae",
   telephone: "+971562422121",
   areaServed: [{ "@type": "Country", name: "United Arab Emirates" }, "Worldwide"],
@@ -88,8 +88,8 @@ async function seoFor(url, request, env) {
   if (key === "home") {
     const { cats } = await catalog(request, env);
     return {
-      title: "1 OF 1 | Pre-Owned Luxury Watches & Designer Bags in Dubai",
-      desc: "Shop authentic 1 of 1 pre-owned luxury in Dubai: Rolex, Hermès, Chanel, Louis Vuitton and more, plus F1 Paddock Club tickets for Abu Dhabi. Best-condition pieces, same-day UAE delivery, worldwide shipping.",
+      title: "1 OF 1 | One-of-One Luxury Watches & Designer Bags in Dubai",
+      desc: "1 of 1 luxury in Dubai: Rolex, Hermès, Chanel, Louis Vuitton and more, pieces you won't find anywhere else. Best quality, same-day UAE delivery, worldwide shipping. Plus F1 Paddock Club tickets.",
       canonical: SITE + "/",
       ld: [
         ORG,
@@ -106,11 +106,11 @@ async function seoFor(url, request, env) {
     const { cats } = await catalog(request, env);
     const c = cats.find(x => x.id === id);
     if (!c) return { robots: "noindex, follow" };
-    const s = CAT_SEO[c.id] || { h: `Pre-Owned ${c.title} in Dubai`, k: `pre-owned designer ${c.title.toLowerCase()}` };
+    const s = CAT_SEO[c.id] || { h: `Luxury ${c.title} in Dubai`, k: `one-of-one designer ${c.title.toLowerCase()}` };
     const canon = `${SITE}/category?c=${c.id}`;
     return {
       title: `${s.h} | ${BRAND}`,
-      desc: `Shop ${s.k}. Authentic 1 of 1 pieces in the best condition${c.items.length ? `, including ${brandsOf(c.items).join(", ")}` : ""}. Same-day UAE delivery, worldwide shipping.`,
+      desc: `Shop ${s.k}. 1 of 1 pieces in the best quality, never found anywhere else${c.items.length ? `, including ${brandsOf(c.items).join(", ")}` : ""}. Same-day UAE delivery, worldwide shipping.`,
       canonical: canon,
       ld: [
         { "@type": "CollectionPage", name: s.h, url: canon, isPartOf: { "@id": SITE + "/#site" } },
@@ -131,14 +131,14 @@ async function seoFor(url, request, env) {
     const name = `${it.brand} ${it.name}`;
     const img = it.image ? abs(it.image) : OG_IMAGE;
     return {
-      title: `${name} | Pre-Owned ${it.cat.title} Dubai | ${BRAND}`,
-      desc: `Authentic pre-owned ${name}, condition: ${it.condition || "excellent"}. ${it.sold ? "Sold, ask us to source another." : aed(it.price) + "."} 1 of 1 piece, checked by hand. Same-day UAE delivery, worldwide shipping.`,
+      title: `${name} | 1 of 1 ${it.cat.title} Dubai | ${BRAND}`,
+      desc: `${name}, a 1 of 1 piece you won't find anywhere else. Condition: ${it.condition || "excellent"}. ${it.sold ? "Sold, ask us to source another." : aed(it.price) + "."} Checked by hand. Same-day UAE delivery, worldwide shipping.`,
       canonical: canon,
       image: img,
       type: "product",
       ld: [
         { "@type": "Product", name, brand: { "@type": "Brand", name: it.brand }, category: it.cat.title, sku: it.id,
-          description: `Pre-owned ${name}. Condition: ${it.condition || "excellent"}. Checked by hand before it ships.`,
+          description: `${name}, a 1 of 1 piece. Condition: ${it.condition || "excellent"}. Checked by hand before it ships.`,
           ...(it.image ? { image: [img] } : {}),
           offers: { "@type": "Offer", url: canon, priceCurrency: "AED", price: it.price,
             availability: it.sold ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
