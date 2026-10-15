@@ -7,9 +7,9 @@ import { serveSite } from "./seo.js";
 const STATUSES = ["pending", "shipped", "delivered", "cancelled"];
 const PAID_METHODS = ["cash", "card", "online", "applepay"];
 const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
-// Loyalty: every AED 5,000 of delivered spend earns one 15% coupon for a future order.
-const LOYALTY_STEP = 5000, LOYALTY_DISCOUNT = 0.15;
-const DISCOUNT_LABEL = { welcome: "Welcome 15% · first order", loyalty: "Level-up reward · 15% off" };
+// Loyalty: every AED 5,000 of delivered spend earns one 10% coupon for a future order.
+const LOYALTY_STEP = 5000, LOYALTY_DISCOUNT = 0.10;
+const DISCOUNT_LABEL = { welcome: "Welcome 15% · first order", loyalty: "Level-up reward · 10% off" };
 
 // Where a customer stands: welcome bonus, loyalty coupons earned/used/available, progress.
 async function rewards(env, phone) {
@@ -149,7 +149,7 @@ async function me(request, env) {
     rewards: rw,
     coupons: [
       { code: "WELCOME15", percent: 15, label: "Off your first order", active: rw.welcome },
-      ...Array.from({ length: rw.earned }, (_, i) => ({ code: "LOYAL15-" + (i + 1), percent: 15, label: `Reward for AED ${((i + 1) * LOYALTY_STEP).toLocaleString("en-US")} spent`, active: i >= rw.used }))
+      ...Array.from({ length: rw.earned }, (_, i) => ({ code: "LEVEL10-" + (i + 1), percent: 10, label: `Reward for AED ${((i + 1) * LOYALTY_STEP).toLocaleString("en-US")} spent`, active: i >= rw.used }))
     ]
   });
 }

@@ -215,7 +215,7 @@ function maybeOffer() {
     <div class="eyebrow">Welcome to 1 OF 1</div>
     <div class="big">15<span>%</span></div>
     <h2 id="offerT">Off your first order</h2>
-    <p>Create your account with your mobile number. Your discount is applied automatically at checkout. Then level up every AED 5,000 you spend, all the way to Level 100, and every new level unlocks another 15% off.</p>
+    <p>Create your account with your mobile number. Your discount is applied automatically at checkout. Then level up every AED 5,000 you spend, all the way to Level 100, and every new level unlocks 10% off.</p>
     <a class="btn" href="/login">Create account · Get 15% off</a>
     <button class="later">Maybe later</button>
   </div>`;

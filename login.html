@@ -26,7 +26,7 @@
   <div class="narrow" id="signin" style="padding-top:48px">
     <div><div class="eyebrow" id="eb">Sign in or create account</div><h1 class="page-title" id="h">Welcome to 1 OF 1</h1>
     <p class="muted" id="sub">Enter your mobile number. We'll check if you already have an account.</p></div>
-    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout. Then level up every AED 5,000 you spend, and every new level unlocks another 15% off.</div></div>
+    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout. Then level up every AED 5,000 you spend, and every new level unlocks 10% off.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
       <div class="f"><label for="phone">Mobile number</label>
         <div id="phoneHost"></div>
@@ -144,7 +144,7 @@ function showLevels() {
     <h2 id="lvT">How levels work</h2>
     <ol class="lv-how">
       <li><b>Spend, level up.</b> Every AED 5,000 you spend on delivered orders is one level, all the way to Level 100 at AED 500,000.</li>
-      <li><b>Every level pays.</b> Each new level unlocks one 15% coupon, so passing a tier gives you as many coupons as it has levels. Reaching Level 100 means 100 coupons in total.</li>
+      <li><b>Every level pays.</b> Each new level unlocks one 10% coupon, so passing a tier gives you as many coupons as it has levels. Reaching Level 100 means 100 coupons in total.</li>
       <li><b>Your first order</b> already gets 15% off as a welcome, before Level 1.</li>
       <li><b>One coupon per order.</b> Unused coupons stay saved for your next orders.</li>
     </ol>
@@ -182,8 +182,8 @@ async function loadAccount() {
         <div class="lv-top"><span>1 OF 1 · Membership</span><button class="lv-q" id="lvQ" aria-label="How levels work">?</button></div>
         <div class="lv-n">Level ${lvl} <span>/ 100</span></div><div class="lv-name">${t.n}</div>
         <div class="rw-bar"><i style="width:${pct}%"></i></div>
-        <div class="rw-foot">${lvl >= 100 ? "<span>Max level reached. You still earn 15% every AED 5,000.</span>" : `<span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1}</span>`}</div>
-        <div class="lv-ready">${rw.available} × 15% off ready · ${rw.earned} earned in total</div>
+        <div class="rw-foot">${lvl >= 100 ? "<span>Max level reached. You still earn 10% every AED 5,000.</span>" : `<span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1}</span>`}</div>
+        <div class="lv-ready">${rw.available} × 10% off ready · ${rw.earned} earned in total</div>
         ${nt ? `<div class="lv-next">${money(nt.from * 5000 - rw.spent)} to <b>${nt.n}</b> · <b>+${nt.from - rw.earned} ${nt.from - rw.earned === 1 ? "coupon" : "coupons"}</b> on the way</div>` : ""}
       </div>
       <div class="ladder">${TIERS_LV.map((x, i) => `<span class="${i <= ti ? "on" : ""}${i === ti ? " now" : ""}"><b>${x.from === x.to ? x.from : x.from + "+"}</b>${x.n}</span>`).join("")}</div>`;
