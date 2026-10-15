@@ -27,11 +27,12 @@
 <script>
 (async () => {
   const d = await loadProducts();
-  renderHeader({ search: true, chips: d.categories.map(c => ({ title: c.title, href: "#" + c.id })) });
+  const cats = d.categories.filter(c => c.items.length);
+  renderHeader({ search: true, chips: cats.map(c => ({ title: c.title, href: "#" + c.id })) });
   const main = document.getElementById("main"); main.innerHTML = "";
-  d.categories.forEach(c => {
+  cats.forEach(c => {
     const s = document.createElement("section"); s.className = "shelf"; s.id = c.id;
-    s.innerHTML = `<div class="head"><div><h2>${esc(c.title)}</h2><small>${c.items.length} pieces · ${esc(c.subtitle)}</small></div>
+    s.innerHTML = `<div class="head"><div><h2>${esc(c.title)}</h2><small>${c.items.length} ${c.items.length === 1 ? "piece" : "pieces"} · ${esc(c.subtitle)}</small></div>
       <div class="ctrl"><a class="all" href="/category.html?c=${c.id}">View all</a>
       <button class="arrow" data-d="-1" aria-label="Scroll ${esc(c.title)} left">${sv(I.left, 16)}</button>
       <button class="arrow" data-d="1" aria-label="Scroll ${esc(c.title)} right">${sv(I.right, 16)}</button></div></div>

@@ -44,9 +44,9 @@ function draw() {
   const s = document.getElementById("sort").value;
   if (s === "low") items = [...items].sort((a, b) => a.price - b.price);
   if (s === "high") items = [...items].sort((a, b) => b.price - a.price);
-  document.getElementById("count").textContent = items.length + " pieces · " + cat.subtitle;
+  document.getElementById("count").textContent = items.length + (items.length === 1 ? " piece · " : " pieces · ") + cat.subtitle;
   const g = document.getElementById("grid");
-  g.innerHTML = items.map(cardHTML).join("") || '<p class="muted">Nothing here yet.</p>';
+  g.innerHTML = items.map(cardHTML).join("") || `<div class="empty" style="grid-column:1/-1">New ${esc(cat.title.toLowerCase())} arriving soon. Looking for something specific?<a class="btn" href="https://wa.me/${STORE.whatsapp}" target="_blank" rel="noopener">Ask us on WhatsApp</a></div>`;
   bindCards(g);
 }
 (async () => {

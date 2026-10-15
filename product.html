@@ -42,7 +42,7 @@
       <button class="btn wide" id="add" ${it.sold ? "disabled" : ""}></button>
       <a class="btn ghost wide" href="https://wa.me/${STORE.whatsapp}?text=${ask}" target="_blank" rel="noopener">Ask on WhatsApp</a>
       <dl class="specs">
-        <dt>Condition</dt><dd>${esc(it.condition || "—")}</dd>
+        ${it.condition ? `<dt>Condition</dt><dd>${esc(it.condition)}</dd>` : ""}
         <dt>Category</dt><dd>${esc(it.cat.title)}</dd>
         <dt>Reference</dt><dd>${esc(it.id.toUpperCase())}</dd>
       </dl>
