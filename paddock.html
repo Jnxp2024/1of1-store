@@ -18,106 +18,119 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/phone.js"></script>
-<script src="/assets/paddock-data.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
 <main class="gut pad">
   <section class="pad-hero">
     <div class="pad-copy">
-      <span class="eyebrow">1 OF 1 · Paddock <i class="soon">Coming soon</i></span>
+      <span class="eyebrow">1 OF 1 · Paddock <i class="soon">Pre-book now</i></span>
       <h1>The paddock, <em>not the grandstand.</em></h1>
-      <p>Paddock Club, team suites and pit-lane garages for the Abu Dhabi Grand Prix, 4–6 December 2026. UAE only for now. Register and we hold your place.</p>
-      <div class="pad-cta"><a class="btn" id="heroWa" target="_blank" rel="noopener">Register interest</a><a class="btn ghost" href="#races">See the race</a></div>
+      <p>Paddock Club, team suites and pit-lane garages for the Abu Dhabi Grand Prix, 4–6 December 2026. UAE only.</p>
+      <p class="hold"><b>Pre-book today.</b> Send us an inquiry and we'll hold your ticket for you the moment it's released.</p>
+      <div class="pad-cta"><a class="btn" id="heroWa" target="_blank" rel="noopener">Pre-book · Send inquiry</a><a class="btn ghost" href="#tiers">See the passes</a></div>
       <div class="pad-count" id="count"></div>
     </div>
-    <figure class="pad-map" aria-label="Yas Marina Circuit layout">
-      <svg id="heroSvg" role="img"></svg>
-      <figcaption><span>Yas Marina Circuit</span><span>24.47° N · 54.60° E</span></figcaption>
-    </figure>
-  </section>
-
-  <section id="races" class="pad-sec">
-    <div class="head"><div><h2>Available in the UAE only</h2><small>Abu Dhabi Grand Prix · December 2026 · tickets coming soon</small></div></div>
-    <div class="races" id="raceGrid"></div>
+    <div class="fan" id="fan" aria-label="Paddock passes"></div>
   </section>
 
   <section class="pad-sec">
-    <div class="head"><div><h2>Ways in</h2><small>Every kind of paddock access</small></div></div>
-    <div class="tiers" id="tiers"></div>
-  </section>
-
-  <section class="pad-sec pad-form">
-    <div><h2>Be first in line</h2><p class="muted">Abu Dhabi Grand Prix, December 2026. Pick how close you want to be and we'll message you on WhatsApp as soon as passes open.</p></div>
-    <div class="pad-pick">
-      <label class="f" for="pTier">Access<select class="in" id="pTier"></select></label>
-      <a class="btn" id="pGo" target="_blank" rel="noopener">Register on WhatsApp</a>
+    <div class="ticket" id="ticket">
+      <div class="t-main">
+        <span class="t-k">Admit · Abu Dhabi Grand Prix</span>
+        <h2>Yas Marina Circuit</h2>
+        <div class="t-grid">
+          <div><span>Weekend</span><b>04–06 Dec 2026</b></div>
+          <div><span>Available</span><b>UAE only</b></div>
+          <div><span>Race</span><b>Sunday · twilight</b></div>
+          <div><span>Status</span><b class="gold">Pre-booking open</b></div>
+        </div>
+        <p>Tickets aren't released yet. Send an inquiry with the pass you want and how many guests, and we'll hold them for you the moment they're available.</p>
+      </div>
+      <div class="t-stub">
+        <span class="t-k">Season finale</span>
+        <div class="t-day"><b>06</b><span>Dec</span></div>
+        <div class="bars" aria-hidden="true"></div>
+        <a class="btn" id="stubWa" target="_blank" rel="noopener">Send inquiry</a>
+      </div>
     </div>
   </section>
 
-  <p class="pad-legal">1 OF 1 is an independent reseller and is not affiliated with Formula 1 or any team. Circuit layouts are for illustration. Race dates follow the published 2026 calendar and may change. Paddock access is currently offered for the Abu Dhabi Grand Prix only.</p>
+  <section class="pad-sec" id="tiers">
+    <div class="head"><div><h2>Choose your pass</h2><small>Every kind of paddock access · pre-book any of them</small></div></div>
+    <div class="tiers" id="tierGrid"></div>
+  </section>
+
+  <section class="pad-sec pad-form">
+    <div><h2>Hold my ticket</h2><p class="muted">Pick your pass and how many guests. We'll confirm on WhatsApp and hold your ticket as soon as it's released.</p></div>
+    <div class="pad-pick">
+      <label class="f" for="pTier">Pass<select class="in" id="pTier"></select></label>
+      <label class="f" for="pQty">Guests<select class="in" id="pQty"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6+</option></select></label>
+      <a class="btn" id="pGo" target="_blank" rel="noopener">Send inquiry</a>
+    </div>
+  </section>
+
+  <p class="pad-legal">1 OF 1 is an independent reseller and is not affiliated with Formula 1, the FIA or any team. Pass designs shown are 1 OF 1 illustrations, not the official credentials. Dates follow the published 2026 calendar and may change.</p>
 </main>
 <footer id="ftr"></footer>
 <script>
 const TIERS = [
-  { id: "garage", name: "F1 Garage", line: "Inside the pit lane, steps from the cars.", inc: ["Pit-lane location", "Chef-led dining all weekend", "Behind-the-scenes access", "Select races only"] },
-  { id: "paddock", name: "Paddock Club", line: "Above the team garages, looking down on the grid.", inc: ["Views of the start, finish and pits", "Fine dining and open bar", "Daily pit-lane walk", "Guided paddock tour"] },
-  { id: "team", name: "Team Paddock Club Suite", line: "Paddock Club inside a team's own suite, above its pit box.", inc: ["Team garage tour", "Driver and team appearances", "Team gifts", "Team depends on the race"] },
-  { id: "champions", name: "Champions Club", line: "Trackside hospitality hosted by racing legends.", inc: ["Premium trackside views", "Appearances from F1 legends", "Paddock tour", "Dining and drinks included"] },
-  { id: "circuit", name: "Circuit Hospitality", line: "Private trackside suites and lounges, one day or the full weekend.", inc: ["Single or multi-day passes", "Covered trackside seating", "Food and drinks", "Great for groups"] }
+  { id: "garage", code: "GRG", name: "F1 Garage", zone: ["Pit lane", "Garage", "Paddock"], hue: "garage", line: "Inside the pit lane, steps from the cars.", inc: ["Pit-lane location", "Chef-led dining all weekend", "Behind-the-scenes access", "The closest seat in the sport"] },
+  { id: "paddock", code: "PC", name: "Paddock Club", zone: ["Paddock", "Pit walk", "Grid view"], hue: "gold", line: "Above the team garages, looking down on the grid.", inc: ["Views of the start, finish and pits", "Fine dining and open bar", "Daily pit-lane walk", "Guided paddock tour"] },
+  { id: "team", code: "TS", name: "Team Suite", zone: ["Paddock", "Team garage", "Pit walk"], hue: "blue", line: "Paddock Club inside a team's own suite, above its pit box.", inc: ["Team garage tour", "Driver and team appearances", "Team gifts", "Team depends on availability"] },
+  { id: "champions", code: "CC", name: "Champions Club", zone: ["Trackside", "Paddock tour", "Legends"], hue: "silver", line: "Trackside hospitality hosted by racing legends.", inc: ["Premium trackside views", "Appearances from racing legends", "Paddock tour", "Dining and drinks included"] },
+  { id: "circuit", code: "HSP", name: "Circuit Hospitality", zone: ["Trackside", "Lounge", "3 days"], hue: "green", line: "Private trackside suites and lounges, one day or all weekend.", inc: ["Single or multi-day passes", "Covered trackside seating", "Food and drinks", "Great for groups"] }
 ];
-const day = s => new Date(s + "T12:00:00Z");
-const fmt = s => day(s).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 const wa = t => `https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(t)}`;
-const upcoming = PADDOCK_RACES.filter(r => day(r.date) >= new Date(Date.now() - 864e5)).sort((a, b) => a.date.localeCompare(b.date));
-const races = PADDOCK_RACES.filter(r => r.id === "ae-2009");
+const ask = name => wa(`Hello 1 OF 1, I'd like to pre-book ${name ? name + " " : "paddock "}tickets for the Abu Dhabi Grand Prix (4–6 Dec 2026). Please hold them for me once they're available.`);
+
+function pass(t, i) {
+  const no = String(37 + i * 113).padStart(4, "0");
+  return `<div class="pass p-${t.hue}" style="--i:${i}">
+    <div class="strap" aria-hidden="true"></div>
+    <div class="slot" aria-hidden="true"></div>
+    <div class="p-top"><span>1 OF 1 · Paddock</span><span>2026</span></div>
+    <div class="p-code">${t.code}</div>
+    <div class="p-name">${esc(t.name)}</div>
+    <div class="p-ev">Abu Dhabi Grand Prix<br><small>Yas Marina · 04–06.12</small></div>
+    <div class="p-zones">${t.zone.map(z => `<span>${esc(z)}</span>`).join("")}</div>
+    <div class="p-foot"><div class="holo" aria-hidden="true"></div><div><div class="bars" aria-hidden="true"></div><small>Nº ${no} · Pre-book</small></div></div>
+  </div>`;
+}
 
 (async () => {
   const D = await loadProducts();
   renderHeader({ chips: D.categories.filter(c => c.items.length).map(c => ({ title: c.title, href: "/category.html?c=" + c.id })), paddock: true });
 })();
 
-// hero: Yas Marina drawn live, a car lapping it
-const yas = PADDOCK_RACES.find(r => r.id === "ae-2009");
-const hs = document.getElementById("heroSvg");
-hs.setAttribute("viewBox", yas.vb);
-hs.innerHTML = `<defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-  <path d="${yas.d}" class="trk-base"/><path d="${yas.d}" class="trk-draw" pathLength="1"/>
-  <circle r="3.2" class="car" filter="url(#glow)"><animateMotion dur="9s" repeatCount="indefinite" path="${yas.d}"/></circle>
-  <circle r="2" class="car2"><animateMotion dur="9s" begin="-0.35s" repeatCount="indefinite" path="${yas.d}"/></circle>`;
-const p0 = yas.d.slice(1).split(" L")[0].split(" ");
-hs.insertAdjacentHTML("beforeend", `<g class="sf"><rect x="${+p0[0] - 4}" y="${+p0[1] - 1.2}" width="8" height="2.4"/></g>`);
-
-// countdown to the finale
-const fin = day("2026-12-06"), dd = Math.ceil((fin - Date.now()) / 864e5);
+document.getElementById("fan").innerHTML = [TIERS[1], TIERS[0], TIERS[2]].map(pass).join("");
+const fin = new Date("2026-12-06T13:00:00Z"), dd = Math.ceil((fin - Date.now()) / 864e5);
 document.getElementById("count").innerHTML = dd > 0 ? `<b>${dd}</b><span>days to lights out<br>in Abu Dhabi</span>` : "";
-document.getElementById("heroWa").href = wa("Hello 1 OF 1, I'm interested in paddock tickets for the Abu Dhabi Grand Prix.");
+document.getElementById("heroWa").href = document.getElementById("stubWa").href = ask("");
 
-document.getElementById("raceGrid").innerHTML = races.map((r, i) => `
-  <article class="race race-one" style="--i:${i}">
-    <div class="race-map"><svg viewBox="${r.vb}" aria-hidden="true"><path d="${r.d}" class="trk-base"/><path d="${r.d}" class="trk-line" pathLength="1"/></svg>
-      <span class="soon">Coming soon</span></div>
-    <div class="race-info">
-      <div class="race-date"><b>${fmt(r.date)}</b><span>2026</span></div>
-      <div><h3>${esc(r.gp)}</h3><p>${esc(r.circuit)} · ${esc(r.city)}</p><p>Race weekend 4–6 December 2026</p><small>UAE only · season finale · twilight race</small></div>
-    </div>
-    <a class="race-cta" target="_blank" rel="noopener" href="${wa(`Hello 1 OF 1, I'm interested in paddock tickets for the ${r.gp} (${fmt(r.date)} 2026).`)}">Notify me</a>
-  </article>`).join("");
-
-document.getElementById("tiers").innerHTML = TIERS.map((t, i) => `
+document.getElementById("tierGrid").innerHTML = TIERS.map((t, i) => `
   <article class="tier">
-    <div class="tier-top"><span class="tier-n">0${i + 1}</span><span class="soon">Coming soon</span></div>
+    <div class="tier-pass">${pass(t, i)}</div>
+    <div class="tier-top"><span class="tier-n">0${i + 1}</span><span class="soon">Pre-book</span></div>
     <h3>${esc(t.name)}</h3><p>${esc(t.line)}</p>
     <ul>${t.inc.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+    <a class="tier-cta" target="_blank" rel="noopener" href="${ask(t.name)}">Hold this pass →</a>
   </article>`).join("");
 
-const pt = document.getElementById("pTier"), go = document.getElementById("pGo");
+const pt = document.getElementById("pTier"), pq = document.getElementById("pQty"), go = document.getElementById("pGo");
 pt.innerHTML = TIERS.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("") + `<option value="any">Not sure yet, advise me</option>`;
 const sync = () => {
-  const r = races[0], t = TIERS.find(x => x.id === pt.value);
-  go.href = wa(`Hello 1 OF 1, please register my interest: ${r.gp} (${fmt(r.date)} 2026), ${t ? t.name : "advise me on the best access"}.`);
+  const t = TIERS.find(x => x.id === pt.value);
+  go.href = wa(`Hello 1 OF 1, I'd like to pre-book for the Abu Dhabi Grand Prix (4–6 Dec 2026): ${t ? t.name : "please advise me on the best pass"}, ${pq.value} ${pq.value === "1" ? "guest" : "guests"}. Please hold the tickets for me once they're available.`);
 };
-pt.onchange = sync; sync();
+pt.onchange = pq.onchange = sync; sync();
+
+// subtle tilt on the hero passes
+const fan = document.getElementById("fan");
+if (matchMedia("(hover:hover)").matches) fan.addEventListener("pointermove", e => {
+  const r = fan.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+  fan.style.setProperty("--rx", (-y * 8).toFixed(2) + "deg"); fan.style.setProperty("--ry", (x * 10).toFixed(2) + "deg");
+});
 </script>
 </body>
 </html>

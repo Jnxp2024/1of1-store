@@ -18,7 +18,6 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/phone.js"></script>
-<script src="/assets/paddock-data.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
@@ -54,11 +53,10 @@
     [l, r].forEach(a => a.onclick = () => row.scrollBy({ left: a.dataset.d * row.clientWidth * .85 }));
     row.addEventListener("scroll", upd, { passive: true }); requestAnimationFrame(upd); addEventListener("resize", upd);
     if (c === cats[0]) {
-      const pick = ["ae-2009"].map(id => PADDOCK_RACES.find(r => r.id === id));
       main.insertAdjacentHTML("beforeend", `<a class="pad-tease" href="/paddock.html">
-        <div><span class="soon">Coming soon</span><h2>F1 Paddock <em>tickets.</em></h2>
-        <p>Paddock Club, team suites and pit-lane garages for the Abu Dhabi Grand Prix. UAE only, December 2026.</p><span class="go">Explore the paddock →</span></div>
-        <div class="maps" aria-hidden="true">${pick.map((r, k) => `<svg viewBox="${r.vb}" style="--i:${k}" class="tmap"><path d="${r.d}" class="trk-base"/><path d="${r.d}" class="trk-line" pathLength="1"/></svg>`).join("")}</div></a>`);
+        <div><span class="soon">Pre-book now</span><h2>F1 Paddock <em>tickets.</em></h2>
+        <p>Abu Dhabi Grand Prix, December 2026. UAE only. Send us an inquiry and we'll hold your ticket the moment it's released.</p><span class="go">Pre-book your pass →</span></div>
+        <div class="mini-fan" aria-hidden="true">${[["PC","Paddock Club","gold"],["GRG","F1 Garage","garage"],["TS","Team Suite","blue"]].map(([c, n, h], k) => `<div class="mpass p-${h}" style="--i:${k}"><span class="slot"></span><b>${c}</b><small>${n}</small><i class="bars"></i></div>`).join("")}</div></a>`);
     }
   });
   bindCards(main);
