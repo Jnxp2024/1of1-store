@@ -6,13 +6,17 @@
 const AED_PER_USD = 3.6725;
 const LOCK_MS = 30 * 60 * 1000;
 const USDT_TRC20_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-const DECIMALS = { "usdt-trc20": 2, "usdt-erc20": 2, btc: 8, eth: 6 };
-const GECKO = { btc: "bitcoin", eth: "ethereum" };
+const DECIMALS = { "usdt-trc20": 2, "usdt-erc20": 2, "usdt-bep20": 2, "usdt-sol": 2, btc: 8, eth: 6, bnb: 6, sol: 6 };
+const GECKO = { btc: "bitcoin", eth: "ethereum", bnb: "binancecoin", sol: "solana" };
 export const EXPLORER = {
   "usdt-trc20": tx => `https://tronscan.org/#/transaction/${tx}`,
   "usdt-erc20": tx => `https://etherscan.io/tx/${tx}`,
   eth: tx => `https://etherscan.io/tx/${tx}`,
-  btc: tx => `https://mempool.space/tx/${tx}`
+  btc: tx => `https://mempool.space/tx/${tx}`,
+  "usdt-bep20": tx => `https://bscscan.com/tx/${tx}`,
+  bnb: tx => `https://bscscan.com/tx/${tx}`,
+  "usdt-sol": tx => `https://solscan.io/tx/${tx}`,
+  sol: tx => `https://solscan.io/tx/${tx}`
 };
 
 export async function wallets(request, env) {

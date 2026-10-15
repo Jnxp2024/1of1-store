@@ -1,9 +1,13 @@
 {
-  "_help": "Paste your own wallet addresses below. A coin shows at checkout only when its address is filled in. Double-check every address: payments sent to a wrong address can't be recovered.",
+  "_help": "Your own wallet addresses. A coin shows at checkout only when its address is filled in. Double-check every address: payments sent to a wrong address can't be recovered.",
   "wallets": [
-    { "id": "usdt-trc20", "coin": "USDT", "network": "TRON (TRC20)", "address": "" },
-    { "id": "usdt-erc20", "coin": "USDT", "network": "Ethereum (ERC20)", "address": "" },
-    { "id": "btc", "coin": "BTC", "network": "Bitcoin", "address": "" },
-    { "id": "eth", "coin": "ETH", "network": "Ethereum", "address": "" }
+    { "id": "usdt-trc20", "coin": "USDT", "network": "TRON (TRC20)", "address": "TDyiy2pHi5asgvr4q9c291v4FQGANV4qwt" },
+    { "id": "usdt-erc20", "coin": "USDT", "network": "Ethereum (ERC20)", "address": "0x6354f66a26cBc4d56bDD83b4A73fFa4F8805e1a1" },
+    { "id": "usdt-bep20", "coin": "USDT", "network": "BNB Smart Chain (BEP20)", "address": "0x6354f66a26cBc4d56bDD83b4A73fFa4F8805e1a1" },
+    { "id": "usdt-sol", "coin": "USDT", "network": "Solana (SPL)", "address": "BXg5PMq6kpcgjY4hFjymQxxnwuZhKcqpuXGNfLwPiF46" },
+    { "id": "btc", "coin": "BTC", "network": "Bitcoin", "address": "bc1q0zkpj3vgp968p325qvu424kp5m2nvv9faf3lzw" },
+    { "id": "eth", "coin": "ETH", "network": "Ethereum", "address": "0x6354f66a26cBc4d56bDD83b4A73fFa4F8805e1a1" },
+    { "id": "bnb", "coin": "BNB", "network": "BNB Smart Chain (BEP20)", "address": "0x6354f66a26cBc4d56bDD83b4A73fFa4F8805e1a1" },
+    { "id": "sol", "coin": "SOL", "network": "Solana", "address": "BXg5PMq6kpcgjY4hFjymQxxnwuZhKcqpuXGNfLwPiF46" }
   ]
 }

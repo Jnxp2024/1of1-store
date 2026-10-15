@@ -88,7 +88,14 @@ function draw() {
     </div>`;
   }).join("") : '<div class="empty">No orders match.</div>';
 }
-function txLink(o) { const t = encodeURIComponent(o.crypto_tx); return o.crypto_coin === "btc" ? "https://mempool.space/tx/" + t : o.crypto_coin === "usdt-trc20" ? "https://tronscan.org/#/transaction/" + t : "https://etherscan.io/tx/" + t; }
+function txLink(o) {
+  const t = encodeURIComponent(o.crypto_tx), c = o.crypto_coin;
+  if (c === "btc") return "https://mempool.space/tx/" + t;
+  if (c === "usdt-trc20") return "https://tronscan.org/#/transaction/" + t;
+  if (c === "bnb" || c === "usdt-bep20") return "https://bscscan.com/tx/" + t;
+  if (c === "sol" || c === "usdt-sol") return "https://solscan.io/tx/" + t;
+  return "https://etherscan.io/tx/" + t;
+}
 function statusKey(s) { return { new: "pending", confirmed: "shipped" }[s] || s; }
 document.getElementById("aform").addEventListener("submit", e => {
   e.preventDefault();
