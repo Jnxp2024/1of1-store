@@ -144,12 +144,12 @@ function showLevels() {
     <h2 id="lvT">How levels work</h2>
     <ol class="lv-how">
       <li><b>Spend, level up.</b> Every AED 5,000 you spend on delivered orders is one level, all the way to Level 100 at AED 500,000.</li>
-      <li><b>Every level pays.</b> Each new level unlocks a 15% coupon. It's applied automatically to your next order.</li>
+      <li><b>Every level pays.</b> Each new level unlocks one 15% coupon, so passing a tier gives you as many coupons as it has levels. Reaching Level 100 means 100 coupons in total.</li>
       <li><b>Your first order</b> already gets 15% off as a welcome, before Level 1.</li>
       <li><b>One coupon per order.</b> Unused coupons stay saved for your next orders.</li>
     </ol>
-    <table class="lv-table"><thead><tr><th>Tier</th><th>Levels</th><th>Total spend</th></tr></thead><tbody>
-      ${TIERS_LV.map(t => `<tr><td><i class="dot lv-${t.k}"></i>${t.n}</td><td>${t.from === t.to ? t.from : t.from + "–" + t.to}</td><td>${t.k === "ivory" ? "Start" : t.k === "icon" ? "AED 500,000" : "AED " + (t.from * 5).toLocaleString("en-US") + "k – " + ((t.to + 1) * 5).toLocaleString("en-US") + "k"}</td></tr>`).join("")}
+    <table class="lv-table"><thead><tr><th>Tier</th><th>Levels</th><th>Spend (AED)</th><th>Coupons</th></tr></thead><tbody>
+      ${TIERS_LV.map(t => `<tr><td><i class="dot lv-${t.k}"></i>${t.n}</td><td>${t.from === t.to ? t.from : t.from + "–" + t.to}</td><td>${t.k === "ivory" ? "Start" : t.k === "icon" ? "500k" : (t.from * 5) + "k–" + ((t.to + 1) * 5) + "k"}</td><td class="cp">${t.k === "ivory" ? "Welcome" : `+${t.to - t.from + 1}<small>${t.to} total</small>`}</td></tr>`).join("")}
     </tbody></table>
     <p class="muted" style="font-size:12px;margin:0">Cancelled orders don't count. Spend counts once an order is delivered.</p>
   </div>`;
@@ -183,7 +183,8 @@ async function loadAccount() {
         <div class="lv-n">Level ${lvl} <span>/ 100</span></div><div class="lv-name">${t.n}</div>
         <div class="rw-bar"><i style="width:${pct}%"></i></div>
         <div class="rw-foot">${lvl >= 100 ? "<span>Max level reached. You still earn 15% every AED 5,000.</span>" : `<span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1}</span>`}</div>
-        <div class="lv-ready">${rw.available} × 15% off ready${nt ? ` · ${money(nt.from * 5000 - rw.spent)} to ${nt.n}` : ""}</div>
+        <div class="lv-ready">${rw.available} × 15% off ready · ${rw.earned} earned in total</div>
+        ${nt ? `<div class="lv-next">${money(nt.from * 5000 - rw.spent)} to <b>${nt.n}</b> · <b>+${nt.from - rw.earned} ${nt.from - rw.earned === 1 ? "coupon" : "coupons"}</b> on the way</div>` : ""}
       </div>
       <div class="ladder">${TIERS_LV.map((x, i) => `<span class="${i <= ti ? "on" : ""}${i === ti ? " now" : ""}"><b>${x.from === x.to ? x.from : x.from + "+"}</b>${x.n}</span>`).join("")}</div>`;
     $("lvQ").onclick = showLevels;
