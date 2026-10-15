@@ -39,7 +39,7 @@ function normPhone(raw) {
   if (/^5\d{8}$/.test(d)) d = "971" + d;
   return d.length >= 9 && d.length <= 15 ? d : null;
 }
-const prettyPhone = d => d && d.startsWith("971") && d.length === 12 ? `+971 ${d.slice(3, 5)} ${d.slice(5, 8)} ${d.slice(8)}` : "+" + d;
+const prettyPhone = d => (typeof prettyIntl === "function" ? prettyIntl(d) : "+" + d);
 
 /* ---------- icons ---------- */
 const sv = (p, s = 18, fill = "none", sw = 1.4) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="${fill}" stroke="currentColor" stroke-width="${sw}" aria-hidden="true">${p}</svg>`;

@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
+<script src="/assets/phone.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
@@ -26,8 +27,9 @@
     <p class="muted" id="sub">Enter your mobile number. We'll check if you already have an account.</p></div>
     <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
-      <label class="f" for="phone">Mobile number
-        <div style="display:flex;align-items:flex-end;gap:12px"><input class="in" type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="050 123 4567 or +44 …"><button type="button" class="x" id="chg" hidden style="white-space:nowrap">Change</button></div></label>
+      <div class="f"><label for="phone">Mobile number</label>
+        <div id="phoneHost"></div>
+        <button type="button" class="x" id="chg" hidden style="align-self:flex-start">Change number</button></div>
       <label class="f" for="name" id="nameRow" hidden>Full name<input class="in" type="text" id="name" autocomplete="name" placeholder="Sara Ahmed"></label>
       <label class="f" for="pw" id="pwRow" hidden><span id="pwLabel">Password</span><input class="in" type="password" id="pw" autocomplete="current-password" placeholder="At least 6 characters"></label>
       <label class="f" for="pw2" id="pw2Row" hidden>Confirm password<input class="in" type="password" id="pw2" autocomplete="new-password"></label>
@@ -73,11 +75,12 @@
 <script>
 function initials(n) { return n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(""); }
 let MODE = "phone", PHONE = "";
+const PF = phoneField(document.getElementById("phoneHost"), { id: "phone" });
 const $ = id => document.getElementById(id);
 function setMode(m) {
   MODE = m;
   const isNew = m === "new", isOld = m === "old", isPhone = m === "phone";
-  $("phone").readOnly = !isPhone; $("chg").hidden = isPhone;
+  PF.lock(!isPhone); $("chg").hidden = isPhone;
   $("nameRow").hidden = !isNew; $("pw2Row").hidden = !isNew; $("pwRow").hidden = isPhone; $("forgot").hidden = !isOld;
   $("pw").autocomplete = isNew ? "new-password" : "current-password";
   $("eb").textContent = isNew ? "New here" : isOld ? "Welcome back" : "Sign in or create account";
@@ -85,7 +88,7 @@ function setMode(m) {
   $("sub").textContent = isNew ? "This number isn't registered yet. Add your name and choose a password." : isOld ? "This number already has an account." : "Enter your mobile number. We'll check if you already have an account.";
   $("go").textContent = isNew ? "Create account" : isOld ? "Sign in" : "Continue";
   $("err").textContent = "";
-  setTimeout(() => (isNew ? $("name") : isOld ? $("pw") : $("phone")).focus(), 30);
+  setTimeout(() => (isNew ? $("name") : isOld ? $("pw") : PF.input).focus(), 30);
 }
 const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(body) }).then(async r => ({ status: r.status, ...(await r.json().catch(() => ({}))) }));
 function done(j) {
@@ -99,11 +102,10 @@ $("form").addEventListener("submit", async e => {
   btn.disabled = true;
   try {
     if (MODE === "phone") {
-      PHONE = normPhone($("phone").value);
-      if (!PHONE) { err.textContent = "Enter a valid mobile number, for example 050 123 4567."; return; }
+      PHONE = PF.value();
+      if (!PHONE) { err.textContent = "Enter a valid mobile number."; return; }
       const j = await post("/api/auth/check", { phone: PHONE });
       if (!j.ok) { err.textContent = j.error || "Something went wrong. Try again."; return; }
-      $("phone").value = prettyPhone(PHONE);
       setMode(j.exists ? "old" : "new");
     } else if (MODE === "old") {
       const j = await post("/api/auth/login", { phone: PHONE, password: $("pw").value });
@@ -119,7 +121,7 @@ $("form").addEventListener("submit", async e => {
   } catch { err.textContent = "Connection problem. Check your internet and try again."; }
   finally { btn.disabled = false; }
 });
-$("chg").onclick = () => { $("phone").value = ""; $("pw").value = ""; $("pw2").value = ""; setMode("phone"); };
+$("chg").onclick = () => { $("pw").value = ""; $("pw2").value = ""; setMode("phone"); };
 
 function paintAvatar(name, pic) {
   $("avatar").innerHTML = pic ? `<img src="${pic}" alt="Profile picture">` : esc(initials(name));
