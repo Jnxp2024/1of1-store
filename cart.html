@@ -47,10 +47,11 @@
 
       <div class="f"><span>Payment</span>
         <div class="pay" role="radiogroup" aria-label="Payment method">
-          <label class="pay-opt on"><input type="radio" name="pay" value="cod" checked><span><b>Pay on delivery</b><small>Pay when your piece arrives · cash, or card / online payment at the door</small></span></label>
+          <label class="pay-opt on" id="codOpt"><input type="radio" name="pay" value="cod" checked><span><b>Pay on delivery</b><small>Pay when your piece arrives · cash, or card / online payment at the door</small></span></label>
           <label class="pay-opt off"><input type="radio" name="pay" value="card" disabled><span><b>Credit / debit card</b><small>Coming soon</small></span></label>
           <label class="pay-opt off"><input type="radio" name="pay" value="applepay" disabled><span><b>Apple Pay</b><small>Coming soon</small></span></label>
-          <label class="pay-opt off"><input type="radio" name="pay" value="crypto" disabled><span><b>Crypto · USDT, BTC, ETH</b><small>Coming soon</small></span></label>
+          <label class="pay-opt off" id="cryptoOpt"><input type="radio" name="pay" value="crypto" disabled><span><b>Crypto · USDT, BTC, ETH</b><small id="cryptoSub">Coming soon</small></span></label>
+          <div class="coins" id="coins" hidden></div>
         </div>
       </div>
       <p class="muted" id="who" style="margin:0;font-size:14px"></p>
@@ -145,6 +146,22 @@ function draw() {
   document.querySelectorAll(".seg button").forEach(b => b.onclick = () => setLocMode(b.dataset.m));
   $("getLoc").onclick = getLocation;
   setLocMode("live"); loadSaved();
+  let COIN = null;
+  fetch("/api/wallets").then(r => r.json()).then(j => {
+    const ws = (j && j.wallets) || []; if (!ws.length) return;
+    const opt = $("cryptoOpt"), inp = opt.querySelector("input");
+    opt.classList.remove("off"); inp.disabled = false; opt.querySelector("b").textContent = "Crypto · " + [...new Set(ws.map(w => w.coin))].join(", "); $("cryptoSub").textContent = "Pay now from your wallet · we show you the QR code and address";
+    $("coins").innerHTML = ws.map((w, i) => `<button type="button" class="coin${i ? "" : " on"}" data-id="${w.id}"><b>${esc(w.coin)}</b><small>${esc(w.network)}</small></button>`).join("");
+    COIN = ws[0].id;
+    $("coins").onclick = e => { const b = e.target.closest(".coin"); if (!b) return; COIN = b.dataset.id; $("coins").querySelectorAll(".coin").forEach(x => x.classList.toggle("on", x === b)); };
+  }).catch(() => {});
+  document.querySelectorAll('input[name="pay"]').forEach(r => r.onchange = () => {
+    const v = document.querySelector('input[name="pay"]:checked').value;
+    $("codOpt").classList.toggle("on", v === "cod"); $("cryptoOpt").classList.toggle("on", v === "crypto");
+    $("coins").hidden = v !== "crypto";
+    $("place").textContent = v === "crypto" ? "Place order · pay with crypto" : "Place order";
+  });
+  window.payChoice = () => { const v = document.querySelector('input[name="pay"]:checked').value; return v === "crypto" ? { payment: "crypto", coin: COIN } : { payment: "cod" }; };
   document.getElementById("list").onclick = e => { const b = e.target.closest(".x"); if (b) { setCart(getCart().filter(x => x !== b.dataset.id)); draw(); } };
   document.getElementById("place").onclick = async () => {
     const u = getUser();
@@ -159,11 +176,12 @@ function draw() {
       const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ name: u.name, phone: u.phone, delivery: zone.options[zone.selectedIndex].text, zone: zone.value, note: addr,
           lat: MODE === "live" && LOC ? LOC.lat : null, lng: MODE === "live" && LOC ? LOC.lng : null,
-          saveAddress: $("saveAddr").checked, payment: "cod", items: its.map(i => i.id) }) });
+          saveAddress: $("saveAddr").checked, ...payChoice(), items: its.map(i => i.id) }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || "Server error " + r.status);
       setCart([]);
       store.set("oo_orders", [{ id: j.id, token: j.token }, ...store.get("oo_orders", [])].slice(0, 100));
+      if (j.payment === "crypto") { location.href = `/pay?id=${j.id}&t=${j.token}`; return; }
       document.getElementById("list").hidden = true; document.getElementById("checkout").hidden = true;
       document.getElementById("done").hidden = false;
       document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}` + (j.discount ? ` (${j.label || "15% off"}, you saved ${aed(j.discount)})` : "");

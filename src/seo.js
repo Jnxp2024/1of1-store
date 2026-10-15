@@ -11,7 +11,7 @@ const SAME_AS = [
   "https://www.tiktok.com/@1of1.uae",
   "https://www.snapchat.com/add/uae.1of1"
 ];
-const PRIVATE = new Set(["cart", "login", "admin", "404"]);
+const PRIVATE = new Set(["cart", "login", "admin", "404", "pay"]);
 
 // Words people actually type, per category (used in titles and descriptions).
 const CAT_SEO = {
@@ -221,7 +221,7 @@ export async function serveSite(request, env) {
 
   if (url.pathname === "/robots.txt") {
     const body = live
-      ? `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /cart\nDisallow: /login\nDisallow: /api/\n\nSitemap: ${SITE}/sitemap.xml\n`
+      ? `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /cart\nDisallow: /login\nDisallow: /pay\nDisallow: /api/\n\nSitemap: ${SITE}/sitemap.xml\n`
       : "User-agent: *\nDisallow: /\n";
     return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
   }

@@ -1,4 +1,5 @@
 import { serveSite } from "./seo.js";
+import { wallets, quoteCrypto, findTrc20 } from "./crypto.js";
 // 1 OF 1 store — Cloudflare Worker.
 // Serves the site from static assets and handles the order API under /api/*.
 // Bindings (wrangler.jsonc): ASSETS (the site), DB (D1 "oneofone-store").
@@ -136,7 +137,7 @@ async function me(request, env) {
   const c = await currentCustomer(request, env);
   if (!c) return json({ ok: false, error: "Signed out" }, 401);
   const { results } = await env.DB.prepare(
-    "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
+    "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind, crypto_coin, crypto_amount, crypto_address, crypto_tx FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
   ).bind(c.phone).all();
   const live = results.filter(o => o.status !== "cancelled");
   const rw = await rewards(env, c.phone);
@@ -204,9 +205,14 @@ async function createOrder(request, env) {
   if (phone.length < 9 || phone.length > 15) return json({ ok: false, error: "Invalid phone" }, 400);
   if (!ids.length) return json({ ok: false, error: "Bag is empty" }, 400);
 
-  // only cash on delivery for now; card and Apple Pay are "coming soon" in the checkout
-  const payment = "cod";
-  if (b.payment && b.payment !== "cod") return json({ ok: false, error: "Only cash on delivery is available right now." }, 400);
+  // pay on delivery, or crypto to our own wallets; card and Apple Pay are "coming soon"
+  const payment = b.payment === "crypto" ? "crypto" : "cod";
+  if (b.payment && !["cod", "crypto"].includes(b.payment)) return json({ ok: false, error: "That payment method isn't available yet." }, 400);
+  let wallet = null;
+  if (payment === "crypto") {
+    wallet = (await wallets(request, env)).find(w => w.id === b.coin);
+    if (!wallet) return json({ ok: false, error: "Pick a crypto coin to pay with." }, 400);
+  }
   let lat = Number(b.lat), lng = Number(b.lng);
   if (!(Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180)) { lat = null; lng = null; }
   else { lat = Math.round(lat * 1e6) / 1e6; lng = Math.round(lng * 1e6) / 1e6; }
@@ -215,14 +221,74 @@ async function createOrder(request, env) {
   const q = await price(request, env, ids, phone);
   if (!q.items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
   const token = crypto.randomUUID().replace(/-/g, "");
+  let cq = { amount: null, expires: null };
+  if (wallet) {
+    try { cq = await quoteCrypto(wallet.id, q.total); }
+    catch { return json({ ok: false, error: "Live crypto price is unavailable right now. Try again in a minute, or pay on delivery." }, 503); }
+  }
   const res = await env.DB.prepare(
-    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token, lat, lng, payment, discount_kind) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token, lat, lng, payment, q.kind).run();
+    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token, lat, lng, payment, discount_kind, crypto_coin, crypto_amount, crypto_address, crypto_expires) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token, lat, lng, payment, q.kind,
+    wallet ? wallet.id : null, cq.amount, wallet ? wallet.address : null, cq.expires).run();
   if (who && b.saveAddress) {
     const saved = JSON.stringify({ zone: String(b.zone || "uae").slice(0, 10), text: note, lat, lng });
     await env.DB.prepare("UPDATE customers SET address = ? WHERE id = ?").bind(saved, who.id).run();
   }
-  return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total, label: q.label });
+  return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total, label: q.label, payment });
+}
+
+// ---------- crypto payment page ----------
+async function payOrder(request, env, id, t) {
+  const o = await env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first();
+  if (!o || o.payment !== "crypto") return null;
+  if (t && /^[a-f0-9]{32}$/.test(t) && t === o.token) return o;
+  const who = await currentCustomer(request, env);
+  return who && who.phone === o.phone ? o : null;
+}
+function payView(o, w) {
+  return { id: o.id, total_aed: o.total_aed, status: o.status, paid: !!o.paid, coin: o.crypto_coin,
+    label: w ? `${w.coin} · ${w.network}` : o.crypto_coin, symbol: w ? w.coin : "", network: w ? w.network : "",
+    address: o.crypto_address, amount: o.crypto_amount, expires: o.crypto_expires, tx: o.crypto_tx, auto: o.crypto_coin === "usdt-trc20" };
+}
+async function payGet(request, env, id) {
+  const url = new URL(request.url);
+  let o = await payOrder(request, env, id, url.searchParams.get("t"));
+  if (!o) return json({ ok: false, error: "Not found" }, 404);
+  const w = (await wallets(request, env)).find(x => x.id === o.crypto_coin);
+  if (!o.paid && o.status !== "cancelled" && o.crypto_expires && o.crypto_expires < Date.now() && !o.crypto_tx) {
+    try {
+      const cq = await quoteCrypto(o.crypto_coin, o.total_aed);
+      await env.DB.prepare("UPDATE orders SET crypto_amount = ?, crypto_expires = ? WHERE id = ?").bind(cq.amount, cq.expires, o.id).run();
+      o = { ...o, crypto_amount: cq.amount, crypto_expires: cq.expires };
+    } catch {}
+  }
+  return json({ ok: true, order: payView(o, w) });
+}
+async function paySubmitTx(request, env, id) {
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const o = await payOrder(request, env, id, String(b.t || ""));
+  if (!o) return json({ ok: false, error: "Not found" }, 404);
+  const tx = String(b.tx || "").trim();
+  if (!/^(0x)?[A-Za-z0-9]{40,100}$/.test(tx)) return json({ ok: false, error: "That doesn't look like a transaction ID." }, 400);
+  const dup = await env.DB.prepare("SELECT id FROM orders WHERE crypto_tx = ? AND id != ?").bind(tx, id).first();
+  if (dup) return json({ ok: false, error: "This transaction is already linked to another order." }, 409);
+  await env.DB.prepare("UPDATE orders SET crypto_tx = ? WHERE id = ?").bind(tx, id).run();
+  return json({ ok: true });
+}
+async function payCheck(request, env, id) {
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const o = await payOrder(request, env, id, String(b.t || ""));
+  if (!o) return json({ ok: false, error: "Not found" }, 404);
+  if (o.paid) return json({ ok: true, paid: true });
+  if (o.crypto_coin !== "usdt-trc20") return json({ ok: true, paid: false, manual: true });
+  const since = Date.parse(o.created_at.replace(" ", "T") + "Z") - 5 * 60 * 1000;
+  let tx = null;
+  try { tx = await findTrc20(o.crypto_address, o.crypto_amount, since); } catch {}
+  if (!tx) return json({ ok: true, paid: false });
+  const dup = await env.DB.prepare("SELECT id FROM orders WHERE crypto_tx = ? AND id != ?").bind(tx, id).first();
+  if (dup) return json({ ok: true, paid: false });
+  await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = 'crypto', paid_at = datetime('now'), crypto_tx = ? WHERE id = ?").bind(tx, id).run();
+  return json({ ok: true, paid: true, tx });
 }
 
 // Customer's own orders. The browser keeps each order's private token from checkout,
@@ -235,7 +301,7 @@ async function myOrders(request, env) {
     const id = Number(r && r.id), token = String((r && r.token) || "");
     if (!Number.isInteger(id) || !/^[a-f0-9]{32}$/.test(token)) continue;
     const row = await env.DB.prepare(
-      "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE id = ? AND token = ?"
+      "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind, crypto_coin, crypto_amount, crypto_address, crypto_tx FROM orders WHERE id = ? AND token = ?"
     ).bind(id, token).first();
     if (row) out.push(row);
   }
@@ -245,7 +311,7 @@ async function myOrders(request, env) {
 
 async function listOrders(request, env) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders ORDER BY id DESC LIMIT 500").all();
+  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind, crypto_coin, crypto_amount, crypto_address, crypto_tx FROM orders ORDER BY id DESC LIMIT 500").all();
   return json({ ok: true, orders: results });
 }
 
@@ -267,7 +333,7 @@ async function setStatus(request, env, id) {
       await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = ?, paid_at = datetime('now') WHERE id = ?").bind(b.paid_method, id).run();
     } else return json({ ok: false, error: "Bad payment method" }, 400);
   }
-  const o = await env.DB.prepare("SELECT status, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE id = ?").bind(id).first();
+  const o = await env.DB.prepare("SELECT status, paid, paid_method, paid_at, status_at, discount_kind, crypto_coin, crypto_amount, crypto_address, crypto_tx FROM orders WHERE id = ?").bind(id).first();
   return json({ ok: true, order: o });
 }
 
@@ -285,6 +351,11 @@ export default {
         if (request.method === "POST" && url.pathname === "/api/me/avatar") return await setAvatar(request, env);
         if (url.pathname === "/api/my-orders" && request.method === "POST") return await myOrders(request, env);
         if (url.pathname === "/api/quote" && request.method === "POST") return await quote(request, env);
+        if (url.pathname === "/api/wallets" && request.method === "GET") return json({ ok: true, wallets: (await wallets(request, env)).map(w => ({ id: w.id, coin: w.coin, network: w.network })) });
+        const pm = url.pathname.match(/^\/api\/pay\/(\d+)(\/tx|\/check)?$/);
+        if (pm && !pm[2] && request.method === "GET") return await payGet(request, env, Number(pm[1]));
+        if (pm && pm[2] === "/tx" && request.method === "POST") return await paySubmitTx(request, env, Number(pm[1]));
+        if (pm && pm[2] === "/check" && request.method === "POST") return await payCheck(request, env, Number(pm[1]));
         if (url.pathname === "/api/orders" && request.method === "POST") return await createOrder(request, env);
         if (url.pathname === "/api/orders" && request.method === "GET") return await listOrders(request, env);
         const m = url.pathname.match(/^\/api\/orders\/(\d+)$/);

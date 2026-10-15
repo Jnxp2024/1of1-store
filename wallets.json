@@ -1,0 +1,9 @@
+{
+  "_help": "Paste your own wallet addresses below. A coin shows at checkout only when its address is filled in. Double-check every address: payments sent to a wrong address can't be recovered.",
+  "wallets": [
+    { "id": "usdt-trc20", "coin": "USDT", "network": "TRON (TRC20)", "address": "" },
+    { "id": "usdt-erc20", "coin": "USDT", "network": "Ethereum (ERC20)", "address": "" },
+    { "id": "btc", "coin": "BTC", "network": "Bitcoin", "address": "" },
+    { "id": "eth", "coin": "ETH", "network": "Ethereum", "address": "" }
+  ]
+}

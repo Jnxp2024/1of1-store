@@ -77,7 +77,7 @@ function draw() {
       <div class="top"><div><div style="font-size:18px">#${o.id} · ${esc(o.name)}</div><div class="muted" style="font-size:13px">${prettyPhone(o.phone)} · ${when}</div></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="st ${esc(o.status)}">${statusLabel(o.status)}</span><span class="st ${o.paid ? "paid" : "unpaid"}">${o.paid ? "Paid" : "Unpaid"}</span>${warn}</div></div>
       <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)} · ${aed(i.price)}</li>`).join("")}</ul>
-      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}${o.lat != null ? `<br><a href="https://maps.google.com/?q=${o.lat},${o.lng}" target="_blank" rel="noopener" style="color:var(--champagne)">Open pinned location in Maps</a>` : ""}<br>Payment: ${esc(paymentLine(o))}${o.paid && o.paid_at ? " · " + new Date(o.paid_at.replace(" ", "T") + "Z").toLocaleString("en-GB", { timeZone: "Asia/Dubai", dateStyle: "medium", timeStyle: "short" }) : ""}</div>
+      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}${o.lat != null ? `<br><a href="https://maps.google.com/?q=${o.lat},${o.lng}" target="_blank" rel="noopener" style="color:var(--champagne)">Open pinned location in Maps</a>` : ""}<br>Payment: ${esc(paymentLine(o))}${o.payment === "crypto" ? `<br><span style="color:var(--champagne)">Crypto: ${esc(o.crypto_amount || "")} ${esc((o.crypto_coin || "").toUpperCase())}</span> to <code style="font-size:12px">${esc(o.crypto_address || "")}</code>${o.crypto_tx ? `<br>Tx: <a target="_blank" rel="noopener" style="color:var(--champagne)" href="${txLink(o)}">${esc(o.crypto_tx.slice(0, 18))}…</a> · check it, then set Payment to Paid · Crypto` : " · no transaction ID yet"}` : ""}${o.paid && o.paid_at ? " · " + new Date(o.paid_at.replace(" ", "T") + "Z").toLocaleString("en-GB", { timeZone: "Asia/Dubai", dateStyle: "medium", timeStyle: "short" }) : ""}</div>
       <div class="top" style="align-items:center"><div style="font-size:20px;font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? `<span class="muted" style="font-size:13px;margin-left:10px">${o.discount_kind === "loyalty" ? "10% level-up reward" : "15% first order"} · −${aed(o.discount_aed)}</span>` : ""}</div></div>
       <div class="acts" style="flex-wrap:wrap">
         <label class="mini">Delivery<select class="in" data-id="${o.id}" data-k="status" aria-label="Delivery status for order ${o.id}">${ST.map(s => `<option value="${s}"${s === statusKey(o.status) ? " selected" : ""}>${statusLabel(s)}</option>`).join("")}</select></label>
@@ -88,6 +88,7 @@ function draw() {
     </div>`;
   }).join("") : '<div class="empty">No orders match.</div>';
 }
+function txLink(o) { const t = encodeURIComponent(o.crypto_tx); return o.crypto_coin === "btc" ? "https://mempool.space/tx/" + t : o.crypto_coin === "usdt-trc20" ? "https://tronscan.org/#/transaction/" + t : "https://etherscan.io/tx/" + t; }
 function statusKey(s) { return { new: "pending", confirmed: "shipped" }[s] || s; }
 document.getElementById("aform").addEventListener("submit", e => {
   e.preventDefault();

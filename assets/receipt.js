@@ -9,6 +9,7 @@ function statusLabel(s) { return ORDER_STATUS[s] || s; }
 
 // One line about money for an order, e.g. "Paid · Cash" or "Due on delivery".
 function paymentLine(o) {
+  if (!o.paid && o.payment === "crypto" && o.status !== "cancelled") return "Awaiting crypto payment · " + (o.crypto_amount || "") + " " + String(o.crypto_coin || "").split("-")[0].toUpperCase();
   if (o.paid) return "Paid · " + (PAID_LABEL[o.paid_method] || "Received");
   if (o.status === "cancelled") return "Not charged";
   return "Due on delivery · cash or card / online";
