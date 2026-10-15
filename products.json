@@ -16,6 +16,72 @@
           "tag": null,
           "image": "/images/rolex-datejust-blue.webp",
           "sold": false
+        },
+        {
+          "id": "watches-2",
+          "brand": "Audemars Piguet",
+          "name": "Royal Oak 15510ST",
+          "condition": "Very good",
+          "price": 142000,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "watches-3",
+          "brand": "Omega",
+          "name": "Speedmaster Moonwatch",
+          "condition": "Excellent",
+          "price": 22500,
+          "was": 24900,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "watches-4",
+          "brand": "Cartier",
+          "name": "Santos Medium Steel",
+          "condition": "Good",
+          "price": 21800,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "watches-5",
+          "brand": "Patek Philippe",
+          "name": "Aquanaut 5167A",
+          "condition": "Excellent",
+          "price": 265000,
+          "was": null,
+          "tag": "Rare",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "watches-6",
+          "brand": "Tudor",
+          "name": "Black Bay 58",
+          "condition": "Very good",
+          "price": 12900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "watches-7",
+          "brand": "Rolex",
+          "name": "Datejust 41 Wimbledon",
+          "condition": "Excellent",
+          "price": 49500,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
         }
       ]
     },
@@ -24,49 +90,540 @@
       "title": "Handbags",
       "subtitle": "Most wanted",
       "icon": "bag",
-      "items": []
+      "items": [
+        {
+          "id": "bags-1",
+          "brand": "Hermès",
+          "name": "Birkin 30 Togo, Gold",
+          "condition": "Excellent",
+          "price": 64500,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-2",
+          "brand": "Chanel",
+          "name": "Classic Flap Medium Caviar",
+          "condition": "Very good",
+          "price": 31900,
+          "was": 38000,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-3",
+          "brand": "Louis Vuitton",
+          "name": "Neverfull MM Monogram",
+          "condition": "Good",
+          "price": 5200,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-4",
+          "brand": "Dior",
+          "name": "Lady Dior Medium Cannage",
+          "condition": "Excellent",
+          "price": 17800,
+          "was": null,
+          "tag": "Rare",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-5",
+          "brand": "Goyard",
+          "name": "Saint Louis PM",
+          "condition": "Very good",
+          "price": 6400,
+          "was": 7100,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-6",
+          "brand": "Bottega Veneta",
+          "name": "Jodie Mini Intrecciato",
+          "condition": "Excellent",
+          "price": 7900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-7",
+          "brand": "Prada",
+          "name": "Re-Edition 2005 Nylon",
+          "condition": "Good",
+          "price": 3100,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "bags-8",
+          "brand": "Celine",
+          "name": "Triomphe Teen",
+          "condition": "Excellent",
+          "price": 10400,
+          "was": 11900,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "jewelry",
       "title": "Jewellery",
       "subtitle": "Certified gold",
       "icon": "jewel",
-      "items": []
+      "items": [
+        {
+          "id": "jewelry-1",
+          "brand": "Cartier",
+          "name": "Love Bracelet 18k Yellow",
+          "condition": "Excellent",
+          "price": 23900,
+          "was": 26500,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-2",
+          "brand": "Van Cleef & Arpels",
+          "name": "Vintage Alhambra Necklace",
+          "condition": "Very good",
+          "price": 14200,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-3",
+          "brand": "Bulgari",
+          "name": "Serpenti Viper Ring",
+          "condition": "Excellent",
+          "price": 9800,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-4",
+          "brand": "Tiffany & Co.",
+          "name": "T Wire Bracelet",
+          "condition": "Good",
+          "price": 4100,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-5",
+          "brand": "Cartier",
+          "name": "Juste un Clou Ring",
+          "condition": "Excellent",
+          "price": 8600,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "jewelry-6",
+          "brand": "Chaumet",
+          "name": "Liens Earrings",
+          "condition": "Very good",
+          "price": 7300,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "shoes",
       "title": "Shoes",
       "subtitle": "Sizes 35 to 46",
       "icon": "shoe",
-      "items": []
+      "items": [
+        {
+          "id": "shoes-1",
+          "brand": "Christian Louboutin",
+          "name": "So Kate 120, EU 38",
+          "condition": "Very good",
+          "price": 1450,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "shoes-2",
+          "brand": "Dior",
+          "name": "B23 High-Top, EU 42",
+          "condition": "Excellent",
+          "price": 2600,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "shoes-3",
+          "brand": "Gucci",
+          "name": "Horsebit Loafer, EU 43",
+          "condition": "Good",
+          "price": 1700,
+          "was": 2100,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "shoes-4",
+          "brand": "Balenciaga",
+          "name": "Triple S, EU 41",
+          "condition": "Good",
+          "price": 1350,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "shoes-5",
+          "brand": "Jimmy Choo",
+          "name": "Romy 85, EU 37",
+          "condition": "Excellent",
+          "price": 1150,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "shoes-6",
+          "brand": "Loro Piana",
+          "name": "Summer Walk, EU 42",
+          "condition": "Very good",
+          "price": 2400,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "eyewear",
       "title": "Sunglasses",
       "subtitle": "With case",
       "icon": "shades",
-      "items": []
+      "items": [
+        {
+          "id": "eyewear-1",
+          "brand": "Cartier",
+          "name": "Panthère Rimless",
+          "condition": "Excellent",
+          "price": 3900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "eyewear-2",
+          "brand": "Chanel",
+          "name": "Pilot CH4189",
+          "condition": "Very good",
+          "price": 1300,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "eyewear-3",
+          "brand": "Gucci",
+          "name": "Oversized GG0516S",
+          "condition": "Good",
+          "price": 780,
+          "was": 950,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "eyewear-4",
+          "brand": "Dior",
+          "name": "DiorSoStellaire",
+          "condition": "Excellent",
+          "price": 1150,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "eyewear-5",
+          "brand": "Prada",
+          "name": "Symbole PR 17WS",
+          "condition": "Very good",
+          "price": 890,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "eyewear-6",
+          "brand": "Tom Ford",
+          "name": "Fausto FT0711",
+          "condition": "Good",
+          "price": 720,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "slg",
       "title": "Wallets & Small Leather",
       "subtitle": "Gift ready",
       "icon": "wallet",
-      "items": []
+      "items": [
+        {
+          "id": "slg-1",
+          "brand": "Louis Vuitton",
+          "name": "Zippy Wallet Damier",
+          "condition": "Very good",
+          "price": 2300,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "slg-2",
+          "brand": "Hermès",
+          "name": "Calvi Card Holder",
+          "condition": "Excellent",
+          "price": 1950,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "slg-3",
+          "brand": "Goyard",
+          "name": "Saint Sulpice Card Holder",
+          "condition": "Excellent",
+          "price": 1500,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "slg-4",
+          "brand": "Chanel",
+          "name": "Classic Card Holder Caviar",
+          "condition": "Very good",
+          "price": 1800,
+          "was": 2050,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "slg-5",
+          "brand": "Saint Laurent",
+          "name": "Cassandre Wallet",
+          "condition": "Good",
+          "price": 900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "slg-6",
+          "brand": "Bottega Veneta",
+          "name": "Intrecciato Bifold",
+          "condition": "Excellent",
+          "price": 1350,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "clothing",
       "title": "Clothing",
       "subtitle": "Dry-cleaned",
       "icon": "coat",
-      "items": []
+      "items": [
+        {
+          "id": "clothing-1",
+          "brand": "Max Mara",
+          "name": "101801 Icon Coat",
+          "condition": "Excellent",
+          "price": 5900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "clothing-2",
+          "brand": "Burberry",
+          "name": "Kensington Trench",
+          "condition": "Very good",
+          "price": 3400,
+          "was": 4100,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "clothing-3",
+          "brand": "Moncler",
+          "name": "Maya Down Jacket",
+          "condition": "Good",
+          "price": 3800,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "clothing-4",
+          "brand": "Saint Laurent",
+          "name": "Le Smoking Blazer",
+          "condition": "Excellent",
+          "price": 4700,
+          "was": null,
+          "tag": "Rare",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "clothing-5",
+          "brand": "Brunello Cucinelli",
+          "name": "Cashmere Crewneck",
+          "condition": "Very good",
+          "price": 2100,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "clothing-6",
+          "brand": "Loewe",
+          "name": "Anagram Denim Jacket",
+          "condition": "Excellent",
+          "price": 2600,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     },
     {
       "id": "acc",
       "title": "Belts & Scarves",
       "subtitle": "Under AED 3,000",
       "icon": "belt",
-      "items": []
+      "items": [
+        {
+          "id": "acc-1",
+          "brand": "Hermès",
+          "name": "H Belt 32mm Reversible",
+          "condition": "Excellent",
+          "price": 2950,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "acc-2",
+          "brand": "Gucci",
+          "name": "GG Marmont Belt",
+          "condition": "Very good",
+          "price": 990,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "acc-3",
+          "brand": "Hermès",
+          "name": "Carré 90 Silk Twill",
+          "condition": "Excellent",
+          "price": 1450,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "acc-4",
+          "brand": "Louis Vuitton",
+          "name": "Initiales 40mm",
+          "condition": "Good",
+          "price": 1100,
+          "was": 1300,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "acc-5",
+          "brand": "Dior",
+          "name": "Saddle Belt",
+          "condition": "Very good",
+          "price": 1650,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "acc-6",
+          "brand": "Chanel",
+          "name": "CC Cashmere Scarf",
+          "condition": "Excellent",
+          "price": 2200,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
     }
   ]
 }
