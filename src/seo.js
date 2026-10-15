@@ -33,7 +33,7 @@ const HOME_FAQ = [
   ["Can you find a piece you don't have listed?", "Yes. Show us the watch, bag or item you want and we find it, often in under a day. Message us on WhatsApp at +971 56 242 2121."],
   ["How do I pay?", "Pay on delivery, in cash or by card / online payment at the door. Card and Apple Pay checkout online are coming soon."],
   ["Do you sell F1 tickets?", "Yes. Pre-book F1 Paddock Club, F1 Garage and team suite tickets for the Abu Dhabi Grand Prix, 4–6 December 2026. Send us an inquiry and we hold your ticket."],
-  ["Do you have discounts and rewards?", "Yes. Create an account and get 15% off your first order, applied automatically at checkout. After that you level up every AED 5,000 you spend (Silver, Gold, Platinum, Diamond, Black, 1 OF 1), and every new level unlocks another 15% off."]
+  ["Do you have discounts and rewards?", "Yes. Create an account and get 15% off your first order, applied automatically at checkout. After that you level up every AED 5,000 you spend, from Silver and Gold up to Level 100 at AED 500,000, and every new level unlocks another 15% off."]
 ];
 
 const PADDOCK_FAQ = [

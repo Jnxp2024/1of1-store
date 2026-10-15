@@ -125,6 +125,39 @@ $("form").addEventListener("submit", async e => {
 });
 $("chg").onclick = () => { $("pw").value = ""; $("pw2").value = ""; setMode("phone"); };
 
+const TIERS_LV = [
+  { n: "Ivory", k: "ivory", from: 0, to: 0 },
+  { n: "Silver", k: "silver", from: 1, to: 2 },
+  { n: "Gold", k: "gold", from: 3, to: 5 },
+  { n: "Platinum", k: "plat", from: 6, to: 9 },
+  { n: "Diamond", k: "diamond", from: 10, to: 19 },
+  { n: "Black", k: "black", from: 20, to: 49 },
+  { n: "1 OF 1", k: "one", from: 50, to: 99 },
+  { n: "1 OF 1 Icon", k: "icon", from: 100, to: 100 }
+];
+const tierOf = lvl => [...TIERS_LV].reverse().find(t => lvl >= t.from);
+function showLevels() {
+  const bg = document.createElement("div"); bg.className = "lv-modal";
+  bg.innerHTML = `<div class="lv-sheet" role="dialog" aria-modal="true" aria-labelledby="lvT">
+    <button class="lv-x" aria-label="Close">×</button>
+    <span class="t-k">1 OF 1 Membership</span>
+    <h2 id="lvT">How levels work</h2>
+    <ol class="lv-how">
+      <li><b>Spend, level up.</b> Every AED 5,000 you spend on delivered orders is one level, all the way to Level 100 at AED 500,000.</li>
+      <li><b>Every level pays.</b> Each new level unlocks a 15% coupon. It's applied automatically to your next order.</li>
+      <li><b>Your first order</b> already gets 15% off as a welcome, before Level 1.</li>
+      <li><b>One coupon per order.</b> Unused coupons stay saved for your next orders.</li>
+    </ol>
+    <table class="lv-table"><thead><tr><th>Tier</th><th>Levels</th><th>Total spend</th></tr></thead><tbody>
+      ${TIERS_LV.map(t => `<tr><td><i class="dot lv-${t.k}"></i>${t.n}</td><td>${t.from === t.to ? t.from : t.from + "–" + t.to}</td><td>${t.k === "ivory" ? "Start" : t.k === "icon" ? "AED 500,000" : "AED " + (t.from * 5).toLocaleString("en-US") + "k – " + ((t.to + 1) * 5).toLocaleString("en-US") + "k"}</td></tr>`).join("")}
+    </tbody></table>
+    <p class="muted" style="font-size:12px;margin:0">Cancelled orders don't count. Spend counts once an order is delivered.</p>
+  </div>`;
+  const close = () => bg.remove();
+  bg.onclick = e => { if (e.target === bg || e.target.closest(".lv-x")) close(); };
+  addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); removeEventListener("keydown", k); } });
+  document.body.appendChild(bg);
+}
 let ORDERS = [];
 document.addEventListener("click", e => { const b = e.target.closest("[data-receipt]"); if (b) downloadReceipt(ORDERS.find(o => o.id == b.dataset.receipt), b); });
 function paintAvatar(name, pic) {
@@ -142,17 +175,18 @@ async function loadAccount() {
     .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const rw = j.rewards;
   if (rw) {
-    const LV = [["Ivory", "ivory"], ["Silver", "silver"], ["Gold", "gold"], ["Platinum", "plat"], ["Diamond", "diamond"], ["Black", "black"], ["1 OF 1", "one"]];
-    const lvl = rw.earned + 1, at = Math.min(lvl, LV.length) - 1, nx = Math.min(lvl + 1, LV.length) - 1;
-    const into = rw.spent % 5000, pct = Math.round(into / 50);
-    $("reward").innerHTML = `<div class="lv-card lv-${LV[at][1]}">
-        <div class="lv-top"><span>1 OF 1 · Membership</span><span>${rw.available} × 15% ready</span></div>
-        <div class="lv-n">Level ${lvl}</div><div class="lv-name">${LV[at][0]}</div>
+    const lvl = Math.min(100, rw.earned), t = tierOf(lvl), ti = TIERS_LV.indexOf(t), nt = TIERS_LV[ti + 1];
+    const into = rw.spent % 5000, pct = lvl >= 100 ? 100 : Math.round(into / 50);
+    const tierPct = nt ? Math.round((rw.spent - t.from * 5000) / ((nt.from - t.from) * 5000) * 100) : 100;
+    $("reward").innerHTML = `<div class="lv-card lv-${t.k}">
+        <div class="lv-top"><span>1 OF 1 · Membership</span><button class="lv-q" id="lvQ" aria-label="How levels work">?</button></div>
+        <div class="lv-n">Level ${lvl} <span>/ 100</span></div><div class="lv-name">${t.n}</div>
         <div class="rw-bar"><i style="width:${pct}%"></i></div>
-        <div class="rw-foot"><span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1} · ${LV[nx][0]}</span></div>
+        <div class="rw-foot">${lvl >= 100 ? "<span>Max level reached. You still earn 15% every AED 5,000.</span>" : `<span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1}</span>`}</div>
+        <div class="lv-ready">${rw.available} × 15% off ready${nt ? ` · ${money(nt.from * 5000 - rw.spent)} to ${nt.n}` : ""}</div>
       </div>
-      <div class="ladder">${LV.map(([n, k], i) => `<span class="${i < lvl ? "on" : ""}${i === at ? " now" : ""}"><b>${i === LV.length - 1 ? "7+" : i + 1}</b>${n}</span>`).join("")}</div>
-      <p class="muted">Level up every AED 5,000 you spend on delivered orders. Every new level unlocks 15% off, applied automatically to your next order, one per order.</p>`;
+      <div class="ladder">${TIERS_LV.map((x, i) => `<span class="${i <= ti ? "on" : ""}${i === ti ? " now" : ""}"><b>${x.from === x.to ? x.from : x.from + "+"}</b>${x.n}</span>`).join("")}</div>`;
+    $("lvQ").onclick = showLevels;
   }
   $("coupons").innerHTML = j.coupons.map(c => `<div class="coupon${c.active ? "" : " used"}">
       <div class="pct">${c.percent}%</div>
