@@ -94,6 +94,7 @@ function draw() {
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.ok) throw new Error(j.error || "Server error " + r.status);
       setCart([]);
+      store.set("oo_orders", [{ id: j.id, token: j.token }, ...store.get("oo_orders", [])].slice(0, 100));
       document.getElementById("list").hidden = true; document.getElementById("checkout").hidden = true;
       document.getElementById("done").hidden = false;
       document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}` + (j.discount ? ` (15% off, you saved ${aed(j.discount)})` : "");

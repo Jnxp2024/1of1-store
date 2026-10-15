@@ -17,37 +17,115 @@
 <body>
 <header id="hdr"></header>
 <main class="gut">
-  <div class="narrow" style="padding-top:48px">
-    <div><div class="eyebrow" id="eb">Sign in</div><h1 class="page-title" id="h">Your name and number</h1>
-    <p class="muted" id="p">No password needed. We use your number to confirm orders on WhatsApp.</p></div>
-    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Sign in now and the discount is applied automatically at checkout.</div></div>
+  <div class="narrow" id="signin" style="padding-top:48px">
+    <div><div class="eyebrow">Sign in</div><h1 class="page-title">Your name and number</h1>
+    <p class="muted">No password needed. We use your number to confirm orders on WhatsApp.</p></div>
+    <div class="promo"><b>15%</b><div><strong>Off your first order</strong>Sign in now and the discount is applied automatically at checkout.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
       <label class="f" for="name">Full name<input class="in" type="text" id="name" autocomplete="name" placeholder="Sara Ahmed"></label>
       <label class="f" for="phone">Mobile number<input class="in" type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="050 123 4567 or +44 …"></label>
       <p class="err" id="err" aria-live="polite"></p>
       <button class="btn wide" type="submit">Continue</button>
     </form>
-    <div id="me" hidden style="display:flex;flex-direction:column;gap:18px">
-      <div class="panel"><div><div class="eyebrow">Signed in as</div><div style="font-size:22px;margin-top:6px" id="meName"></div><div class="muted" id="mePhone"></div></div></div>
-      <a class="btn wide" href="/cart.html">Go to your bag</a>
-      <button class="btn ghost wide" id="out" type="button">Sign out</button>
+  </div>
+
+  <div class="acct" id="account" hidden>
+    <div class="prof">
+      <div class="avatar-wrap">
+        <div class="avatar" id="avatar"></div>
+        <label class="avatar-btn" for="pic" aria-label="Change profile picture">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        </label>
+        <input type="file" id="pic" accept="image/*" hidden>
+      </div>
+      <div style="min-width:0">
+        <div class="eyebrow">My account</div>
+        <h1 id="meName"></h1>
+        <div class="muted" id="mePhone"></div>
+        <div class="links"><button id="rmPic" type="button" hidden>Remove photo</button><button id="out" type="button">Sign out</button></div>
+      </div>
     </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div>
+      <p class="sec-title">My coupons</p>
+      <div id="coupons"></div>
+    </div>
+
+    <div>
+      <p class="sec-title">My orders</p>
+      <div class="orders" id="myOrders"><p class="muted">Loading…</p></div>
+    </div>
+
+    <a class="btn" href="/cart.html" style="align-self:flex-start">Go to your bag</a>
   </div>
 </main>
 <footer id="ftr"></footer>
 <script>
+function initials(n) { return n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(""); }
+function paintAvatar(u) {
+  const pic = store.get("oo_avatar", null), a = document.getElementById("avatar");
+  a.innerHTML = pic ? `<img src="${pic}" alt="Profile picture">` : esc(initials(u.name));
+  document.getElementById("rmPic").hidden = !pic;
+}
+async function loadAccount(u) {
+  const refs = store.get("oo_orders", []);
+  let orders = [];
+  try {
+    if (refs.length) {
+      const r = await fetch("/api/my-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orders: refs }) });
+      const j = await r.json(); if (j.ok) orders = j.orders;
+    }
+  } catch {}
+  let first = !orders.some(o => o.status !== "cancelled");
+  try {
+    const r = await fetch("/api/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: u.phone, items: [] }) });
+    const j = await r.json(); if (j.ok) first = j.firstOrder;
+  } catch {}
+  const live = orders.filter(o => o.status !== "cancelled");
+  const spent = live.reduce((s, o) => s + o.total_aed, 0), saved = live.reduce((s, o) => s + (o.discount_aed || 0), 0);
+  document.getElementById("stats").innerHTML = [["Orders", live.length], ["Total spent", money(spent)], ["You saved", money(saved)]]
+    .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  document.getElementById("coupons").innerHTML = `<div class="coupon${first ? "" : " used"}">
+      <div class="pct">15%</div>
+      <div><div class="code">WELCOME15</div><div class="muted" style="font-size:13px">Off your first order · applied automatically at checkout</div></div>
+      <span class="st ${first ? "active" : ""}">${first ? "Active" : "Used"}</span></div>`;
+  document.getElementById("myOrders").innerHTML = orders.length ? orders.map(o => {
+    const items = JSON.parse(o.items || "[]");
+    const when = new Date(o.created_at.replace(" ", "T") + "Z").toLocaleDateString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", year: "numeric" });
+    return `<div class="my-order">
+      <div class="top"><div>Order #${o.id} <span class="muted" style="font-size:13px">· ${when}</span></div><span class="st ${esc(o.status)}">${esc(o.status)}</span></div>
+      <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)}</li>`).join("")}</ul>
+      <div class="top"><span class="muted" style="font-size:13px">${esc(o.delivery || "")}</span><span style="font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? ` <span class="muted" style="font-size:12px">(−${aed(o.discount_aed)})</span>` : ""}</span></div>
+    </div>`;
+  }).join("") : `<div class="empty" style="padding:40px 16px">No orders yet.<a class="btn" href="/">Browse the collection</a></div>`;
+}
 function show() {
   const u = getUser();
   renderHeader();
-  document.getElementById("form").hidden = !!u;
-  document.getElementById("me").hidden = !u;
-  document.getElementById("p").hidden = !!u;
-  document.getElementById("promo").innerHTML = u
-    ? "<b>15%</b><div><strong>Your first-order discount is ready</strong>It's applied automatically when you check out.</div>"
-    : "<b>15%</b><div><strong>Off your first order</strong>Sign in now and the discount is applied automatically at checkout.</div>";
-  document.getElementById("h").textContent = u ? "Welcome back" : "Your name and number";
-  if (u) { document.getElementById("meName").textContent = u.name; document.getElementById("mePhone").textContent = prettyPhone(u.phone); }
+  document.getElementById("signin").hidden = !!u;
+  document.getElementById("account").hidden = !u;
+  document.title = u ? "1 OF 1 · My account" : "1 OF 1 · Sign in";
+  if (!u) return;
+  document.getElementById("meName").textContent = u.name;
+  document.getElementById("mePhone").textContent = prettyPhone(u.phone);
+  paintAvatar(u);
+  loadAccount(u);
 }
+document.getElementById("pic").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image(), url = URL.createObjectURL(f);
+  img.onload = () => {
+    const S = 256, c = document.createElement("canvas"); c.width = c.height = S;
+    const k = Math.max(S / img.width, S / img.height), w = img.width * k, h = img.height * k;
+    c.getContext("2d").drawImage(img, (S - w) / 2, (S - h) / 2, w, h);
+    store.set("oo_avatar", c.toDataURL("image/jpeg", 0.85));
+    URL.revokeObjectURL(url); paintAvatar(getUser());
+  };
+  img.src = url;
+});
+document.getElementById("rmPic").onclick = () => { try { localStorage.removeItem("oo_avatar"); } catch {} paintAvatar(getUser()); };
 document.getElementById("form").addEventListener("submit", e => {
   e.preventDefault();
   const name = document.getElementById("name").value.trim();

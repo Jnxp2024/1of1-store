@@ -66,15 +66,34 @@ async function createOrder(request, env) {
 
   const q = await price(request, env, ids, phone);
   if (!q.items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
+  const token = crypto.randomUUID().replace(/-/g, "");
   const res = await env.DB.prepare(
-    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total).run();
-  return json({ ok: true, id: res.meta.last_row_id, subtotal: q.subtotal, discount: q.discount, total: q.total });
+    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token).run();
+  return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total });
+}
+
+// Customer's own orders. The browser keeps each order's private token from checkout,
+// so only that browser can read them back (no one can look up orders by phone number).
+async function myOrders(request, env) {
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const refs = Array.isArray(b.orders) ? b.orders.slice(0, 100) : [];
+  const out = [];
+  for (const r of refs) {
+    const id = Number(r && r.id), token = String((r && r.token) || "");
+    if (!Number.isInteger(id) || !/^[a-f0-9]{32}$/.test(token)) continue;
+    const row = await env.DB.prepare(
+      "SELECT id, created_at, items, subtotal_aed, discount_aed, total_aed, status, delivery FROM orders WHERE id = ? AND token = ?"
+    ).bind(id, token).first();
+    if (row) out.push(row);
+  }
+  out.sort((a, b) => b.id - a.id);
+  return json({ ok: true, orders: out });
 }
 
 async function listOrders(request, env) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-  const { results } = await env.DB.prepare("SELECT * FROM orders ORDER BY id DESC LIMIT 500").all();
+  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status FROM orders ORDER BY id DESC LIMIT 500").all();
   return json({ ok: true, orders: results });
 }
 
@@ -92,6 +111,7 @@ export default {
     if (url.pathname.startsWith("/api/")) {
       if (!env.DB) return json({ ok: false, error: "Database not connected" }, 500);
       try {
+        if (url.pathname === "/api/my-orders" && request.method === "POST") return await myOrders(request, env);
         if (url.pathname === "/api/quote" && request.method === "POST") return await quote(request, env);
         if (url.pathname === "/api/orders" && request.method === "POST") return await createOrder(request, env);
         if (url.pathname === "/api/orders" && request.method === "GET") return await listOrders(request, env);

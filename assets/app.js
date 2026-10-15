@@ -105,14 +105,14 @@ function renderHeader(opts = {}) {
   const el = document.getElementById("hdr");
   el.className = "top";
   el.innerHTML = `
-  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; <a href="/login.html">15% off your first order <b>·</b> Sign in</a> &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
+  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; <a href="/login.html">${u ? "My account <b>·</b> Orders &amp; coupons" : "15% off your first order <b>·</b> Sign in"}</a> &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
   <div class="gut">
     <div class="bar">
       <a class="brand" href="/" aria-label="1 OF 1 home">${MONO}<span>1 OF 1</span></a>
       ${opts.search ? `<label class="search" for="q">${sv(I.search, 16)}<input id="q" type="search" placeholder="Search Rolex, Hermès, Cartier…" autocomplete="off"></label>` : '<div style="flex:1"></div>'}
       <div class="tools">
         <select class="cur" id="cur" aria-label="Currency">${Object.keys(STORE.rates).map(c => `<option${c === getCur() ? " selected" : ""}>${c}</option>`).join("")}</select>
-        <a class="who" href="/login.html">${u ? esc(u.name.split(" ")[0]) : "Sign in"}</a>
+        <a class="who" href="/login.html">${u ? "My account" : "Sign in"}</a>
         <a class="icon-btn" href="/login.html" aria-label="Account" style="display:none" id="acct">${sv(I.user, 20)}</a>
         <a class="icon-btn" href="/cart.html" aria-label="Your bag">${sv(I.bag, 20)}<span class="n" id="bagN" hidden>0</span></a>
       </div>
