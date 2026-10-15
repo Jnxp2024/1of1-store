@@ -238,9 +238,9 @@ async function createOrder(request, env) {
 }
 
 // ---------- crypto payment page ----------
-async function payOrder(request, env, id, t) {
+async function payOrder(request, env, id, t, any) {
   const o = await env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first();
-  if (!o || o.payment !== "crypto") return null;
+  if (!o || (!any && o.payment !== "crypto")) return null;
   if (t && /^[a-f0-9]{32}$/.test(t) && t === o.token) return o;
   const who = await currentCustomer(request, env);
   return who && who.phone === o.phone ? o : null;
@@ -283,6 +283,32 @@ async function payCheck(request, env, id) {
   if (o.crypto_coin !== "usdt-trc20") return json({ ok: true, paid: false, manual: true });
   const tx = await settleTrc20(env, o);
   return json({ ok: true, paid: !!tx, tx: tx || undefined });
+}
+
+// Customer switches an unpaid order between pay on delivery and crypto.
+async function payMethod(request, env, id) {
+  let b; try { b = await request.json(); } catch { b = {}; }
+  let o = await payOrder(request, env, id, String(b.t || ""), true);
+  if (!o) return json({ ok: false, error: "Not found" }, 404);
+  if (o.status === "cancelled" || o.status === "delivered") return json({ ok: false, error: "This order can't be changed any more." }, 409);
+  if (o.payment === "crypto" && o.crypto_coin === "usdt-trc20" && !o.paid) {
+    if (await settleTrc20(env, o)) o = { ...o, paid: 1 };
+  }
+  if (o.paid) return json({ ok: false, error: "This order is already paid, so the payment method can't change." }, 409);
+  if (o.payment === "crypto" && o.crypto_tx) return json({ ok: false, error: "You've already sent us a crypto transaction for this order. Message us on WhatsApp to change it." }, 409);
+  if (b.payment === "cod") {
+    await env.DB.prepare("UPDATE orders SET payment = 'cod', crypto_coin = NULL, crypto_amount = NULL, crypto_address = NULL, crypto_expires = NULL WHERE id = ?").bind(id).run();
+    return json({ ok: true, payment: "cod" });
+  }
+  if (b.payment === "crypto") {
+    const w = (await wallets(request, env)).find(x => x.id === (b.coin || "usdt-trc20"));
+    if (!w) return json({ ok: false, error: "Crypto payments aren't available right now." }, 400);
+    let cq; try { cq = await quoteCrypto(w.id, o.total_aed); } catch { return json({ ok: false, error: "Live crypto price is unavailable right now. Try again in a minute." }, 503); }
+    await env.DB.prepare("UPDATE orders SET payment = 'crypto', crypto_coin = ?, crypto_amount = ?, crypto_address = ?, crypto_expires = ?, crypto_tx = NULL WHERE id = ?")
+      .bind(w.id, cq.amount, w.address, cq.expires, id).run();
+    return json({ ok: true, payment: "crypto" });
+  }
+  return json({ ok: false, error: "Pick a payment method." }, 400);
 }
 
 // Looks on-chain for this order's exact USDT amount; marks it paid if found.
@@ -369,10 +395,11 @@ export default {
         if (url.pathname === "/api/my-orders" && request.method === "POST") return await myOrders(request, env);
         if (url.pathname === "/api/quote" && request.method === "POST") return await quote(request, env);
         if (url.pathname === "/api/wallets" && request.method === "GET") return json({ ok: true, wallets: (await wallets(request, env)).map(w => ({ id: w.id, coin: w.coin, network: w.network })) });
-        const pm = url.pathname.match(/^\/api\/pay\/(\d+)(\/tx|\/check)?$/);
+        const pm = url.pathname.match(/^\/api\/pay\/(\d+)(\/tx|\/check|\/method)?$/);
         if (pm && !pm[2] && request.method === "GET") return await payGet(request, env, Number(pm[1]));
         if (pm && pm[2] === "/tx" && request.method === "POST") return await paySubmitTx(request, env, Number(pm[1]));
         if (pm && pm[2] === "/check" && request.method === "POST") return await payCheck(request, env, Number(pm[1]));
+        if (pm && pm[2] === "/method" && request.method === "POST") return await payMethod(request, env, Number(pm[1]));
         if (url.pathname === "/api/orders" && request.method === "POST") return await createOrder(request, env);
         if (url.pathname === "/api/orders" && request.method === "GET") return await listOrders(request, env);
         const m = url.pathname.match(/^\/api\/orders\/(\d+)$/);

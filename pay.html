@@ -81,7 +81,16 @@ function draw() {
       <button class="btn">${o.tx ? "Update" : "Send to us"}</button>
       <p class="muted tiny" id="txm">${o.tx ? "We have your transaction ID. We'll confirm shortly." : ""}</p>
     </form>
-    <a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(`Hello 1 OF 1, I'm paying order #${o.id} with ${o.amount} ${o.symbol} (${o.network}).`)}">Need help? WhatsApp us</a>`;
+    <a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/${STORE.whatsapp}?text=${encodeURIComponent(`Hello 1 OF 1, I'm paying order #${o.id} with ${o.amount} ${o.symbol} (${o.network}).`)}">Need help? WhatsApp us</a>
+    ${o.tx ? "" : `<div class="switch"><span>Changed your mind?</span><button class="linkbtn" id="toCod">Pay on delivery instead</button></div>`}`;
+  if ($("toCod")) $("toCod").onclick = async () => {
+    if (!confirm("Switch this order to pay on delivery (cash, or card / online at the door)? Don't send crypto after switching.")) return;
+    const r = await fetch(`/api/pay/${O.id}/method`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ t: T, payment: "cod" }) });
+    const j = await r.json().catch(() => ({}));
+    if (j.ok) { clearInterval(poll); clearInterval(timer); $("card").innerHTML = `<span class="eyebrow">Order #${O.id}</span><h1>Switched to pay on delivery</h1><p class="muted">Pay when your piece arrives, in cash or by card / online at the door. We'll message you on WhatsApp to confirm delivery.</p><a class="btn" href="/login">View my orders</a>`; }
+    else if (j.error && /already paid/.test(j.error)) { O.paid = true; draw(); }
+    else alert(j.error || "Couldn't switch, try again.");
+  };
   $("card").querySelectorAll("[data-c]").forEach(b => b.onclick = e => { e.preventDefault(); copy(b.dataset.c, b); });
   $("txf").onsubmit = async e => {
     e.preventDefault();

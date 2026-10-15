@@ -541,3 +541,6 @@ label.mini .in{width:auto;font-size:14px;letter-spacing:normal;text-transform:no
 .txform .tiny{grid-column:1/-1}
 .pay-ok{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:30px;color:var(--onyx);background:var(--ok)}
 @media (max-width:640px){.pay-grid{grid-template-columns:1fr}.qr{width:220px;margin:auto}.txform{grid-template-columns:1fr}.pay-card{padding:22px 18px}}
+
+.switch{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--ivory-dim)}
+.linkbtn{background:none;border:0;padding:0;color:var(--champagne);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}

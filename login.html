@@ -158,7 +158,18 @@ function showLevels() {
   addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); removeEventListener("keydown", k); } });
   document.body.appendChild(bg);
 }
-let ORDERS = [];
+let ORDERS = [], CRYPTO_ON = false;
+fetch("/api/wallets").then(r => r.json()).then(j => { CRYPTO_ON = !!(j && j.wallets && j.wallets.length); if (CRYPTO_ON && getUser()) loadAccount(); }).catch(() => {});
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-method]"); if (!b) return;
+  const to = b.dataset.method;
+  if (!confirm(to === "cod" ? "Switch this order to pay on delivery? Don't send crypto after switching." : "Switch this order to pay with crypto (USDT)?")) return;
+  b.disabled = true;
+  const r = await fetch(`/api/pay/${b.dataset.id}/method`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ payment: to }) });
+  const j = await r.json().catch(() => ({}));
+  if (!j.ok) { alert(j.error || "Couldn't change the payment method."); b.disabled = false; return; }
+  if (to === "crypto") location.href = `/pay?id=${b.dataset.id}`; else loadAccount();
+});
 document.addEventListener("click", e => { const b = e.target.closest("[data-receipt]"); if (b) downloadReceipt(ORDERS.find(o => o.id == b.dataset.receipt), b); });
 function paintAvatar(name, pic) {
   $("avatar").innerHTML = pic ? `<img src="${pic}" alt="Profile picture">` : esc(initials(name));
@@ -203,7 +214,9 @@ async function loadAccount() {
       ${k === "cancelled" ? "" : `<div class="track">${steps.map((s, i) => `<span class="${i <= at ? "done" : ""}">${statusLabel(s)}</span>`).join("")}</div>`}
       <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)}</li>`).join("")}</ul>
       <div class="top"><span class="muted" style="font-size:13px">${esc(o.delivery || "")}</span><span style="font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? ` <span class="muted" style="font-size:12px">(−${aed(o.discount_aed)})</span>` : ""}</span></div>
-      <div class="top" style="align-items:center"><span class="pay-line ${o.paid ? "ok" : ""}">${esc(paymentLine(o))}</span><span style="display:flex;gap:8px;flex-wrap:wrap">${o.payment === "crypto" && !o.paid && o.status !== "cancelled" ? `<a class="btn rcpt" href="/pay?id=${o.id}">Pay with crypto</a>` : ""}<button class="btn ghost rcpt" data-receipt="${o.id}">Download receipt</button></span></div>
+      <div class="top" style="align-items:center"><span class="pay-line ${o.paid ? "ok" : ""}">${esc(paymentLine(o))}</span><span style="display:flex;gap:8px;flex-wrap:wrap">${!o.paid && !["cancelled", "delivered"].includes(o.status) ? (o.payment === "crypto"
+        ? `<a class="btn rcpt" href="/pay?id=${o.id}">Pay with crypto</a><button class="btn ghost rcpt" data-method="cod" data-id="${o.id}">Pay on delivery instead</button>`
+        : (CRYPTO_ON ? `<button class="btn ghost rcpt" data-method="crypto" data-id="${o.id}">Pay with crypto instead</button>` : "")) : ""}<button class="btn ghost rcpt" data-receipt="${o.id}">Download receipt</button></span></div>
     </div>`;
   }).join("") : `<div class="empty" style="padding:40px 16px">No orders yet.<a class="btn" href="/">Browse the collection</a></div>`;
 }
