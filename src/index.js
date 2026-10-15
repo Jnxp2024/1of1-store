@@ -3,7 +3,8 @@
 // Bindings (wrangler.jsonc): ASSETS (the site), DB (D1 "oneofone-store").
 // Secret set in the dashboard: ADMIN_PASSWORD.
 
-const STATUSES = ["new", "confirmed", "delivered", "cancelled"];
+const STATUSES = ["pending", "shipped", "delivered", "cancelled"];
+const PAID_METHODS = ["cash", "card", "online", "applepay"];
 const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
 
 const json = (data, status = 200) =>
@@ -116,7 +117,7 @@ async function me(request, env) {
   const c = await currentCustomer(request, env);
   if (!c) return json({ ok: false, error: "Signed out" }, 401);
   const { results } = await env.DB.prepare(
-    "SELECT id, created_at, items, subtotal_aed, discount_aed, total_aed, status, delivery FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
+    "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
   ).bind(c.phone).all();
   const live = results.filter(o => o.status !== "cancelled");
   return json({
@@ -209,7 +210,7 @@ async function myOrders(request, env) {
     const id = Number(r && r.id), token = String((r && r.token) || "");
     if (!Number.isInteger(id) || !/^[a-f0-9]{32}$/.test(token)) continue;
     const row = await env.DB.prepare(
-      "SELECT id, created_at, items, subtotal_aed, discount_aed, total_aed, status, delivery FROM orders WHERE id = ? AND token = ?"
+      "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders WHERE id = ? AND token = ?"
     ).bind(id, token).first();
     if (row) out.push(row);
   }
@@ -219,16 +220,30 @@ async function myOrders(request, env) {
 
 async function listOrders(request, env) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment FROM orders ORDER BY id DESC LIMIT 500").all();
+  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders ORDER BY id DESC LIMIT 500").all();
   return json({ ok: true, orders: results });
 }
 
+// Admin: change delivery status and/or record the payment.
 async function setStatus(request, env, id) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
   let b; try { b = await request.json(); } catch { b = {}; }
-  if (!Number.isInteger(id) || !STATUSES.includes(b.status)) return json({ ok: false, error: "Bad request" }, 400);
-  await env.DB.prepare("UPDATE orders SET status = ? WHERE id = ?").bind(b.status, id).run();
-  return json({ ok: true });
+  if (!Number.isInteger(id)) return json({ ok: false, error: "Bad request" }, 400);
+  const row = await env.DB.prepare("SELECT id FROM orders WHERE id = ?").bind(id).first();
+  if (!row) return json({ ok: false, error: "Not found" }, 404);
+  if (b.status !== undefined) {
+    if (!STATUSES.includes(b.status)) return json({ ok: false, error: "Bad status" }, 400);
+    await env.DB.prepare("UPDATE orders SET status = ?, status_at = datetime('now') WHERE id = ?").bind(b.status, id).run();
+  }
+  if (b.paid_method !== undefined) {
+    if (b.paid_method === null || b.paid_method === "") {
+      await env.DB.prepare("UPDATE orders SET paid = 0, paid_method = NULL, paid_at = NULL WHERE id = ?").bind(id).run();
+    } else if (PAID_METHODS.includes(b.paid_method)) {
+      await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = ?, paid_at = datetime('now') WHERE id = ?").bind(b.paid_method, id).run();
+    } else return json({ ok: false, error: "Bad payment method" }, 400);
+  }
+  const o = await env.DB.prepare("SELECT status, paid, paid_method, paid_at, status_at FROM orders WHERE id = ?").bind(id).first();
+  return json({ ok: true, order: o });
 }
 
 export default {

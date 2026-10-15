@@ -159,7 +159,7 @@ input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--champagne)}
 .order .acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .order select.in{width:auto;font-size:14px;padding:6px 0}
 .st{font-size:10px;letter-spacing:.22em;text-transform:uppercase;padding:5px 10px;border:1px solid currentColor}
-.st.new{color:var(--champagne)}.st.confirmed{color:var(--warn)}.st.delivered{color:var(--ok)}.st.cancelled{color:var(--bad)}
+.st.new,.st.pending{color:var(--champagne)}.st.confirmed,.st.shipped{color:var(--warn)}.st.delivered,.st.paid{color:var(--ok)}.st.cancelled{color:var(--bad)}.st.unpaid{color:var(--ivory-dim)}.st.warn{color:var(--bad)}
 
 footer.foot{border-top:1px solid var(--hair);margin-top:24px;padding-block:44px 34px;color:var(--ivory-dim);font-size:13px}
 .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:28px}
@@ -253,3 +253,13 @@ footer.foot{border-top:1px solid var(--hair);margin-top:24px;padding-block:44px 
 .pay-opt.on{border-color:var(--champagne)}
 .pay-opt.off{opacity:.45;cursor:not-allowed}
 .pay-opt.off small{color:var(--champagne);letter-spacing:.14em;text-transform:uppercase;font-size:10px}
+
+/* order tracking + payment */
+.track{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:4px 0 2px}
+.track span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim);padding-top:9px;border-top:2px solid var(--hair-2)}
+.track span.done{color:var(--ivory);border-top-color:var(--champagne)}
+.pay-line{font-size:13px;color:var(--ivory-dim)}
+.pay-line.ok{color:var(--ok)}
+.btn.rcpt{min-height:38px;padding:0 14px;font-size:11px}
+label.mini{display:flex;flex-direction:column;gap:4px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ivory-dim)}
+label.mini .in{width:auto;font-size:14px;letter-spacing:normal;text-transform:none}

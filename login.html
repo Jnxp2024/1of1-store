@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/phone.js"></script>
+<script src="/assets/receipt.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
@@ -123,6 +124,8 @@ $("form").addEventListener("submit", async e => {
 });
 $("chg").onclick = () => { $("pw").value = ""; $("pw2").value = ""; setMode("phone"); };
 
+let ORDERS = [];
+document.addEventListener("click", e => { const b = e.target.closest("[data-receipt]"); if (b) downloadReceipt(ORDERS.find(o => o.id == b.dataset.receipt), b); });
 function paintAvatar(name, pic) {
   $("avatar").innerHTML = pic ? `<img src="${pic}" alt="Profile picture">` : esc(initials(name));
   $("rmPic").hidden = !pic;
@@ -140,13 +143,17 @@ async function loadAccount() {
       <div class="pct">${c.percent}%</div>
       <div><div class="code">${esc(c.code)}</div><div class="muted" style="font-size:13px">${esc(c.label)} · applied automatically at checkout</div></div>
       <span class="st ${c.active ? "active" : ""}">${c.active ? "Active" : "Used"}</span></div>`).join("");
+  ORDERS = j.orders;
   $("myOrders").innerHTML = j.orders.length ? j.orders.map(o => {
     const items = JSON.parse(o.items || "[]");
     const when = new Date(o.created_at.replace(" ", "T") + "Z").toLocaleDateString("en-GB", { timeZone: "Asia/Dubai", day: "numeric", month: "short", year: "numeric" });
+    const steps = ["pending", "shipped", "delivered"], k = { new: "pending", confirmed: "shipped" }[o.status] || o.status, at = steps.indexOf(k);
     return `<div class="my-order">
-      <div class="top"><div>Order #${o.id} <span class="muted" style="font-size:13px">· ${when}</span></div><span class="st ${esc(o.status)}">${esc(o.status)}</span></div>
+      <div class="top"><div>Order #${o.id} <span class="muted" style="font-size:13px">· ${when}</span></div><span class="st ${esc(k)}">${statusLabel(o.status)}</span></div>
+      ${k === "cancelled" ? "" : `<div class="track">${steps.map((s, i) => `<span class="${i <= at ? "done" : ""}">${statusLabel(s)}</span>`).join("")}</div>`}
       <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)}</li>`).join("")}</ul>
       <div class="top"><span class="muted" style="font-size:13px">${esc(o.delivery || "")}</span><span style="font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? ` <span class="muted" style="font-size:12px">(−${aed(o.discount_aed)})</span>` : ""}</span></div>
+      <div class="top" style="align-items:center"><span class="pay-line ${o.paid ? "ok" : ""}">${esc(paymentLine(o))}</span><button class="btn ghost rcpt" data-receipt="${o.id}">Download receipt</button></div>
     </div>`;
   }).join("") : `<div class="empty" style="padding:40px 16px">No orders yet.<a class="btn" href="/">Browse the collection</a></div>`;
 }

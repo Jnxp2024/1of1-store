@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/phone.js"></script>
+<script src="/assets/receipt.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
@@ -34,7 +35,7 @@
     <div class="cat-head" style="padding-top:0">
       <div><div class="eyebrow">Admin</div><h1 class="page-title">Orders</h1></div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-        <select class="in" id="filter" aria-label="Filter by status" style="width:auto;font-size:14px"><option value="">All orders</option><option value="new">New</option><option value="confirmed">Confirmed</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select>
+        <select class="in" id="filter" aria-label="Filter by status" style="width:auto;font-size:14px"><option value="">All orders</option><option value="pending">Pending</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option><option value="unpaid">Not paid yet</option><option value="paid">Paid</option></select>
         <button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="logout">Lock</button>
       </div>
     </div>
@@ -45,7 +46,8 @@
 <footer id="ftr"></footer>
 <script>
 renderHeader();
-const ST = ["new", "confirmed", "delivered", "cancelled"];
+const ST = ["pending", "shipped", "delivered", "cancelled"];
+const PM = [["", "Not paid yet"], ["cash", "Paid · Cash"], ["card", "Paid · Card at door"], ["online", "Paid · Online payment"], ["applepay", "Paid · Apple Pay"]];
 let ORD = [];
 const pw = () => { try { return sessionStorage.getItem("oo_admin") || ""; } catch { return ""; } };
 const api = (path, opt = {}) => fetch(path, { ...opt, headers: { "Content-Type": "application/json", Authorization: "Bearer " + pw(), ...(opt.headers || {}) } });
@@ -58,25 +60,35 @@ async function load() {
 function gate(msg) { document.getElementById("gate").hidden = false; document.getElementById("dash").hidden = true; document.getElementById("aerr").textContent = msg || ""; }
 function show() { document.getElementById("gate").hidden = true; document.getElementById("dash").hidden = false; }
 function draw() {
-  const f = document.getElementById("filter").value, list = ORD.filter(o => !f || o.status === f);
+  const f = document.getElementById("filter").value;
+  const list = ORD.filter(o => !f || (f === "paid" ? o.paid : f === "unpaid" ? !o.paid && o.status !== "cancelled" : o.status === f));
   const live = ORD.filter(o => o.status !== "cancelled");
   document.getElementById("stats").innerHTML = [
-    ["New", ORD.filter(o => o.status === "new").length], ["To deliver", ORD.filter(o => o.status === "confirmed").length],
-    ["Delivered", ORD.filter(o => o.status === "delivered").length], ["Order value", aed(live.reduce((s, o) => s + o.total_aed, 0))]
+    ["Pending", ORD.filter(o => o.status === "pending").length], ["Shipped", ORD.filter(o => o.status === "shipped").length],
+    ["Delivered", ORD.filter(o => o.status === "delivered").length],
+    ["Collected", aed(live.filter(o => o.paid).reduce((s, o) => s + o.total_aed, 0))],
+    ["To collect", aed(live.filter(o => !o.paid).reduce((s, o) => s + o.total_aed, 0))]
   ].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   document.getElementById("orders").innerHTML = list.length ? list.map(o => {
     const items = JSON.parse(o.items || "[]");
     const when = new Date(o.created_at.replace(" ", "T") + "Z").toLocaleString("en-GB", { timeZone: "Asia/Dubai", dateStyle: "medium", timeStyle: "short" });
+    const warn = o.status === "delivered" && !o.paid ? `<span class="st warn">Payment not recorded</span>` : "";
     return `<div class="order">
-      <div class="top"><div><div style="font-size:18px">#${o.id} · ${esc(o.name)}</div><div class="muted" style="font-size:13px">${prettyPhone(o.phone)} · ${when}</div></div><span class="st ${esc(o.status)}">${esc(o.status)}</span></div>
+      <div class="top"><div><div style="font-size:18px">#${o.id} · ${esc(o.name)}</div><div class="muted" style="font-size:13px">${prettyPhone(o.phone)} · ${when}</div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><span class="st ${esc(o.status)}">${statusLabel(o.status)}</span><span class="st ${o.paid ? "paid" : "unpaid"}">${o.paid ? "Paid" : "Unpaid"}</span>${warn}</div></div>
       <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)} · ${aed(i.price)}</li>`).join("")}</ul>
-      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}${o.lat != null ? `<br><a href="https://maps.google.com/?q=${o.lat},${o.lng}" target="_blank" rel="noopener" style="color:var(--champagne)">Open pinned location in Maps</a>` : ""}<br>Payment: ${o.payment === "cod" || !o.payment ? "Pay on delivery (cash or card/online)" : esc(o.payment)}</div>
-      <div class="top" style="align-items:center"><div style="font-size:20px;font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? `<span class="muted" style="font-size:13px;margin-left:10px">15% first order · −${aed(o.discount_aed)}</span>` : ""}</div>
-        <div class="acts"><a class="btn ghost" style="min-height:40px" target="_blank" rel="noopener" href="https://wa.me/${esc(o.phone)}?text=${encodeURIComponent(`Hello ${o.name}, thank you for your 1 OF 1 order #${o.id}.`)}">WhatsApp</a>
-        <select class="in" data-id="${o.id}" aria-label="Status for order ${o.id}">${ST.map(s => `<option value="${s}"${s === o.status ? " selected" : ""}>${s[0].toUpperCase() + s.slice(1)}</option>`).join("")}</select></div></div>
+      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}${o.lat != null ? `<br><a href="https://maps.google.com/?q=${o.lat},${o.lng}" target="_blank" rel="noopener" style="color:var(--champagne)">Open pinned location in Maps</a>` : ""}<br>Payment: ${esc(paymentLine(o))}${o.paid && o.paid_at ? " · " + new Date(o.paid_at.replace(" ", "T") + "Z").toLocaleString("en-GB", { timeZone: "Asia/Dubai", dateStyle: "medium", timeStyle: "short" }) : ""}</div>
+      <div class="top" style="align-items:center"><div style="font-size:20px;font-variant-numeric:tabular-nums">${aed(o.total_aed)}${o.discount_aed ? `<span class="muted" style="font-size:13px;margin-left:10px">15% first order · −${aed(o.discount_aed)}</span>` : ""}</div></div>
+      <div class="acts" style="flex-wrap:wrap">
+        <label class="mini">Delivery<select class="in" data-id="${o.id}" data-k="status" aria-label="Delivery status for order ${o.id}">${ST.map(s => `<option value="${s}"${s === statusKey(o.status) ? " selected" : ""}>${statusLabel(s)}</option>`).join("")}</select></label>
+        <label class="mini">Payment<select class="in" data-id="${o.id}" data-k="paid_method" aria-label="Payment for order ${o.id}">${PM.map(([v, l]) => `<option value="${v}"${(o.paid ? o.paid_method : "") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+        <button class="btn ghost" style="min-height:40px" data-receipt="${o.id}">Receipt</button>
+        <a class="btn ghost" style="min-height:40px" target="_blank" rel="noopener" href="https://wa.me/${esc(o.phone)}?text=${encodeURIComponent(`Hello ${o.name}, thank you for your 1 OF 1 order #${o.id}.`)}">WhatsApp</a>
+      </div>
     </div>`;
-  }).join("") : '<div class="empty">No orders yet.</div>';
+  }).join("") : '<div class="empty">No orders match.</div>';
 }
+function statusKey(s) { return { new: "pending", confirmed: "shipped" }[s] || s; }
 document.getElementById("aform").addEventListener("submit", e => {
   e.preventDefault();
   try { sessionStorage.setItem("oo_admin", document.getElementById("pw").value); } catch {}
@@ -84,9 +96,17 @@ document.getElementById("aform").addEventListener("submit", e => {
 });
 document.getElementById("orders").addEventListener("change", async e => {
   const s = e.target.closest("select[data-id]"); if (!s) return;
-  const r = await api("/api/orders/" + s.dataset.id, { method: "PATCH", body: JSON.stringify({ status: s.value }) });
-  if (r.ok) { ORD.find(o => o.id == s.dataset.id).status = s.value; draw(); }
-  else s.insertAdjacentHTML("afterend", `<span class="err"> Couldn't save (${r.status})</span>`);
+  if (s.dataset.k === "status" && s.value === "delivered") {
+    const o = ORD.find(x => x.id == s.dataset.id);
+    if (o && !o.paid) setTimeout(() => alert("Marked delivered. Remember to set how the customer paid (Payment dropdown)."), 50);
+  }
+  s.disabled = true;
+  const r = await api("/api/orders/" + s.dataset.id, { method: "PATCH", body: JSON.stringify({ [s.dataset.k]: s.value }) });
+  if (r.ok) { const j = await r.json(); Object.assign(ORD.find(o => o.id == s.dataset.id), j.order); draw(); }
+  else { s.disabled = false; s.insertAdjacentHTML("afterend", `<span class="err"> Couldn't save (${r.status})</span>`); }
+});
+document.getElementById("orders").addEventListener("click", e => {
+  const b = e.target.closest("[data-receipt]"); if (b) downloadReceipt(ORD.find(o => o.id == b.dataset.receipt), b);
 });
 document.getElementById("filter").onchange = draw;
 document.getElementById("refresh").onclick = load;
