@@ -21,6 +21,7 @@
     <div><a class="back" href="/">← Keep browsing</a><h1 class="page-title" style="margin-top:14px">Your bag</h1></div>
     <div id="list"></div>
     <div id="checkout" hidden style="display:flex;flex-direction:column;gap:24px">
+      <div id="sums"></div>
       <div class="total"><span>Total</span><span id="total"></span></div>
       <p class="muted" id="curNote" style="margin:-16px 0 0;font-size:13px"></p>
       <label class="f" for="zone">Deliver to
@@ -42,7 +43,24 @@
 </main>
 <footer id="ftr"></footer>
 <script>
-let D;
+let D, Q = 0;
+function paintTotals(q, mode) {
+  const sums = document.getElementById("sums");
+  let html = "";
+  if (q.discount > 0) html = `<div class="sumline"><span>Subtotal</span><span>${money(q.subtotal)}</span></div><div class="sumline disc"><span>First order · 15% off</span><span>− ${money(q.discount)}</span></div>`;
+  else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login.html?next=cart" style="color:var(--champagne)">Sign in</a> and it's applied automatically.</div></div>`;
+  sums.innerHTML = html;
+  document.getElementById("total").textContent = money(q.total);
+  document.getElementById("curNote").textContent = getCur() !== "AED" ? `Approximate. You pay ${aed(q.total)}.` : "";
+}
+async function quote(u, its) {
+  const my = ++Q;
+  try {
+    const r = await fetch("/api/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: u.phone, items: its.map(i => i.id) }) });
+    const j = await r.json();
+    if (my === Q && j.ok) paintTotals(j, "done");
+  } catch {}
+}
 function items() { return getCart().map(id => D.byId[id]).filter(i => i && !i.sold); }
 function draw() {
   const its = items(), list = document.getElementById("list");
@@ -52,9 +70,9 @@ function draw() {
     : '<div class="empty">Your bag is empty.<a class="btn" href="/">Browse the collection</a></div>';
   document.getElementById("checkout").hidden = !its.length;
   const sum = its.reduce((s, i) => s + i.price, 0);
-  document.getElementById("total").textContent = money(sum);
-  document.getElementById("curNote").textContent = getCur() !== "AED" ? `Approximate. You pay ${aed(sum)}.` : "";
   const u = getUser();
+  paintTotals({ subtotal: sum, discount: 0, total: sum }, u ? "checking" : "signin");
+  if (u && its.length) quote(u, its);
   document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login.html" style="color:var(--champagne)">change</a>` : "Next, sign in with your name and number.";
   document.getElementById("place").textContent = u ? "Place order" : "Sign in to order";
   return its;
@@ -78,7 +96,7 @@ function draw() {
       setCart([]);
       document.getElementById("list").hidden = true; document.getElementById("checkout").hidden = true;
       document.getElementById("done").hidden = false;
-      document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}`;
+      document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}` + (j.discount ? ` (15% off, you saved ${aed(j.discount)})` : "");
       const msg = encodeURIComponent(`Hello 1 OF 1, I just placed order #${j.id} (${aed(j.total)}).`);
       document.getElementById("waBtn").href = `https://wa.me/${STORE.whatsapp}?text=${msg}`;
     } catch (e) {

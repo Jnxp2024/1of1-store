@@ -19,7 +19,8 @@
 <main class="gut">
   <div class="narrow" style="padding-top:48px">
     <div><div class="eyebrow" id="eb">Sign in</div><h1 class="page-title" id="h">Your name and number</h1>
-    <p class="muted" id="p">No password. We use your number to confirm orders on WhatsApp.</p></div>
+    <p class="muted" id="p">No password needed. We use your number to confirm orders on WhatsApp.</p></div>
+    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Sign in now and the discount is applied automatically at checkout.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
       <label class="f" for="name">Full name<input class="in" type="text" id="name" autocomplete="name" placeholder="Sara Ahmed"></label>
       <label class="f" for="phone">Mobile number<input class="in" type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="050 123 4567 or +44 …"></label>
@@ -41,6 +42,9 @@ function show() {
   document.getElementById("form").hidden = !!u;
   document.getElementById("me").hidden = !u;
   document.getElementById("p").hidden = !!u;
+  document.getElementById("promo").innerHTML = u
+    ? "<b>15%</b><div><strong>Your first-order discount is ready</strong>It's applied automatically when you check out.</div>"
+    : "<b>15%</b><div><strong>Off your first order</strong>Sign in now and the discount is applied automatically at checkout.</div>";
   document.getElementById("h").textContent = u ? "Welcome back" : "Your name and number";
   if (u) { document.getElementById("meName").textContent = u.name; document.getElementById("mePhone").textContent = prettyPhone(u.phone); }
 }

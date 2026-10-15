@@ -4,6 +4,7 @@
 // Secret set in the dashboard: ADMIN_PASSWORD.
 
 const STATUSES = ["new", "confirmed", "delivered", "cancelled"];
+const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -26,6 +27,30 @@ async function loadCatalog(request, env) {
   return byId;
 }
 
+// Works out the price for a bag: subtotal from products.json, minus 15% if this
+// phone number has never ordered before (cancelled orders don't count).
+async function price(request, env, ids, phone) {
+  const catalog = await loadCatalog(request, env);
+  const items = ids.map(id => catalog[id]).filter(it => it && !it.sold)
+    .map(it => ({ id: it.id, brand: it.brand, name: it.name, price: it.price }));
+  const subtotal = items.reduce((s, i) => s + i.price, 0);
+  let firstOrder = false;
+  if (phone) {
+    const prev = await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE phone = ? AND status != 'cancelled'").bind(phone).first();
+    firstOrder = !prev || prev.n === 0;
+  }
+  const discount = firstOrder ? Math.round(subtotal * FIRST_ORDER_DISCOUNT) : 0;
+  return { items, subtotal, discount, total: subtotal - discount, firstOrder };
+}
+
+async function quote(request, env) {
+  let b; try { b = await request.json(); } catch { b = {}; }
+  const phone = String(b.phone || "").replace(/\D/g, "");
+  const ids = Array.isArray(b.items) ? [...new Set(b.items.map(String))].slice(0, 20) : [];
+  const q = await price(request, env, ids, phone.length >= 9 ? phone : "");
+  return json({ ok: true, subtotal: q.subtotal, discount: q.discount, total: q.total, firstOrder: q.firstOrder });
+}
+
 // Customer places an order. Prices come from products.json on the server.
 async function createOrder(request, env) {
   let b;
@@ -39,16 +64,12 @@ async function createOrder(request, env) {
   if (phone.length < 9 || phone.length > 15) return json({ ok: false, error: "Invalid phone" }, 400);
   if (!ids.length) return json({ ok: false, error: "Bag is empty" }, 400);
 
-  const catalog = await loadCatalog(request, env);
-  const items = ids.map(id => catalog[id]).filter(it => it && !it.sold)
-    .map(it => ({ id: it.id, brand: it.brand, name: it.name, price: it.price }));
-  if (!items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
-  const total = items.reduce((s, i) => s + i.price, 0);
-
+  const q = await price(request, env, ids, phone);
+  if (!q.items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
   const res = await env.DB.prepare(
-    "INSERT INTO orders (name, phone, delivery, note, items, total_aed) VALUES (?, ?, ?, ?, ?, ?)"
-  ).bind(name, phone, delivery, note, JSON.stringify(items), total).run();
-  return json({ ok: true, id: res.meta.last_row_id, total });
+    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total).run();
+  return json({ ok: true, id: res.meta.last_row_id, subtotal: q.subtotal, discount: q.discount, total: q.total });
 }
 
 async function listOrders(request, env) {
@@ -71,6 +92,7 @@ export default {
     if (url.pathname.startsWith("/api/")) {
       if (!env.DB) return json({ ok: false, error: "Database not connected" }, 500);
       try {
+        if (url.pathname === "/api/quote" && request.method === "POST") return await quote(request, env);
         if (url.pathname === "/api/orders" && request.method === "POST") return await createOrder(request, env);
         if (url.pathname === "/api/orders" && request.method === "GET") return await listOrders(request, env);
         const m = url.pathname.match(/^\/api\/orders\/(\d+)$/);

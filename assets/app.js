@@ -105,7 +105,7 @@ function renderHeader(opts = {}) {
   const el = document.getElementById("hdr");
   el.className = "top";
   el.innerHTML = `
-  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; Every piece <b>·</b> Authenticated &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
+  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; <a href="/login.html">15% off your first order <b>·</b> Sign in</a> &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
   <div class="gut">
     <div class="bar">
       <a class="brand" href="/" aria-label="1 OF 1 home">${MONO}<span>1 OF 1</span></a>
@@ -122,6 +122,28 @@ function renderHeader(opts = {}) {
   if (matchMedia("(max-width:760px)").matches) document.getElementById("acct").style.display = "grid";
   document.getElementById("cur").onchange = e => { store.set("oo_cur", e.target.value); location.reload(); };
   paintCount();
+  maybeOffer();
+}
+function maybeOffer() {
+  if (getUser() || store.get("oo_offer_seen", false)) return;
+  if (/\/(login|admin|cart)(\.html)?$/.test(location.pathname)) return;
+  store.set("oo_offer_seen", true);
+  const bg = document.createElement("div");
+  bg.className = "offer-bg";
+  bg.innerHTML = `<div class="offer" role="dialog" aria-modal="true" aria-labelledby="offerT">
+    <button class="close" aria-label="Close">${sv('<path d="M6 6l12 12M18 6 6 18"/>', 18)}</button>
+    <div class="mono">${MONO}</div>
+    <div class="eyebrow">Welcome to 1 OF 1</div>
+    <div class="big">15<span>%</span></div>
+    <h2 id="offerT">Off your first order</h2>
+    <p>Sign in with your name and mobile number. Your discount is applied automatically at checkout.</p>
+    <a class="btn" href="/login.html">Sign in for 15% off</a>
+    <button class="later">Maybe later</button>
+  </div>`;
+  const close = () => bg.remove();
+  bg.addEventListener("click", e => { if (e.target === bg || e.target.closest(".close,.later")) close(); });
+  addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); removeEventListener("keydown", k); } });
+  document.body.appendChild(bg);
 }
 function paintCount() {
   const n = document.getElementById("bagN"); if (!n) return;

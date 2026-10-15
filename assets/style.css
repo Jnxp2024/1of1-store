@@ -170,3 +170,27 @@ footer.foot{border-top:1px solid var(--hair);margin-top:24px;padding-block:44px 
 
 :focus-visible{outline:1px solid var(--champagne);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.row{scroll-behavior:auto}}
+
+/* welcome offer */
+.offer-bg{position:fixed;inset:0;z-index:60;background:rgba(6,6,5,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));opacity:0;animation:fadein .5s var(--ease) .9s forwards}
+.offer{position:relative;width:min(100%,460px);background:var(--onyx);border:1px solid rgba(201,173,127,.45);padding:44px 36px 34px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;transform:translateY(14px);animation:rise .6s var(--ease) 1s forwards}
+.offer::before{content:"";position:absolute;inset:8px;border:1px solid var(--hair);pointer-events:none}
+.offer .mono{width:46px;height:46px}
+.offer .big{font-weight:200;font-size:76px;line-height:.9;color:var(--champagne);letter-spacing:-.02em}
+.offer .big span{font-size:.4em;letter-spacing:.1em;margin-left:4px}
+.offer h2{margin:0;font-weight:300;font-size:22px;letter-spacing:.02em}
+.offer p{margin:0;color:var(--ivory-dim);font-size:14px;max-width:32ch}
+.offer .btn{margin-top:8px;align-self:stretch}
+.offer .later{background:none;border:0;color:var(--ivory-faint);font:400 11px var(--font);letter-spacing:.22em;text-transform:uppercase;cursor:pointer;padding:8px}
+.offer .later:hover{color:var(--ivory)}
+.offer .close{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;background:none;color:var(--ivory-dim);cursor:pointer;display:grid;place-items:center;z-index:1}
+.offer .close:hover{color:var(--ivory)}
+@keyframes fadein{to{opacity:1}}
+@keyframes rise{to{transform:none}}
+.promo{border:1px solid rgba(201,173,127,.4);background:linear-gradient(180deg,rgba(201,173,127,.08),transparent);padding:18px 20px;display:flex;align-items:center;gap:16px}
+.promo b{font-weight:200;font-size:40px;line-height:1;color:var(--champagne);flex:none}
+.promo div{font-size:14px;color:var(--ivory-dim);line-height:1.5}
+.promo div strong{display:block;font-weight:400;color:var(--ivory);font-size:15px;letter-spacing:.02em}
+.sumline{display:flex;justify-content:space-between;font-size:15px;color:var(--ivory-dim);font-variant-numeric:tabular-nums;padding-top:6px}
+.sumline.disc{color:var(--champagne)}
+@media (prefers-reduced-motion:reduce){.offer-bg,.offer{animation:none;opacity:1;transform:none}}
