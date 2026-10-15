@@ -2,6 +2,8 @@
 const STORE = {
   name: "1 OF 1",
   whatsapp: "971562422121",
+  phoneLocal: "056 242 2121",
+  email: "info@1of1.ae",
   instagram: "1of1.ae",
   // Approximate rates from 1 AED. Customers always pay in AED.
   rates: { AED: 1, USD: 0.2723, EUR: 0.235, GBP: 0.205, SAR: 1.021, KWD: 0.0835, QAR: 0.991, BHD: 0.1026, OMR: 0.1048, INR: 23.0, RUB: 22.0, CNY: 1.95 }
@@ -100,7 +102,7 @@ function renderHeader(opts = {}) {
   const el = document.getElementById("hdr");
   el.className = "top";
   el.innerHTML = `
-  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; Every piece <b>·</b> Authenticated</div>
+  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; Every piece <b>·</b> Authenticated &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
   <div class="gut">
     <div class="bar">
       <a class="brand" href="/" aria-label="1 OF 1 home">${MONO}<span>1 OF 1</span></a>
@@ -130,7 +132,7 @@ function renderFooter() {
       <div><b>Delivery</b><p>UAE · Same-day delivery<br>Worldwide · Within a week, insured</p></div>
       <div><b>Authenticated</b><p>Every piece checked by hand before it ships. Condition graded honestly.</p></div>
       <div><b>Sourcing</b><p>Show us the piece you want. We find it, often in under a day.</p></div>
-      <div><b>Contact</b><p><a href="https://wa.me/${STORE.whatsapp}" target="_blank" rel="noopener">WhatsApp ${prettyPhone(STORE.whatsapp)}</a><br><a href="https://instagram.com/${STORE.instagram}" target="_blank" rel="noopener">Instagram @${STORE.instagram}</a><br>info@1of1.ae</p></div>
+      <div><b>Contact</b><p><a href="tel:+${STORE.whatsapp}">Call ${STORE.phoneLocal}</a><br><a href="https://wa.me/${STORE.whatsapp}" target="_blank" rel="noopener">WhatsApp ${STORE.phoneLocal}</a><br><a href="mailto:${STORE.email}">${STORE.email}</a><br><a href="https://instagram.com/${STORE.instagram}" target="_blank" rel="noopener">Instagram @${STORE.instagram}</a></p></div>
     </div>
     <div class="legal">© ${new Date().getFullYear()} 1 OF 1 · Dubai, United Arab Emirates · Prices in AED</div>
   </div>`;
