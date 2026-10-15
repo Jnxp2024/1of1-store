@@ -39,8 +39,8 @@ let D, brand = "";
 function draw() {
   const id = new URLSearchParams(location.search).get("c");
   const cat = D.categories.find(c => c.id === id) || D.categories[0];
-  document.title = "1 OF 1 · " + cat.title;
-  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category.html?c=" + c.id, on: c.id === cat.id })) });
+  if (!document.querySelector("link[rel=canonical]")) document.title = "1 OF 1 · " + cat.title;
+  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category?c=" + c.id, on: c.id === cat.id })) });
   document.getElementById("title").textContent = cat.title;
   const brands = [...new Set(cat.items.map(i => i.brand))];
   if (!brands.includes(brand)) brand = "";

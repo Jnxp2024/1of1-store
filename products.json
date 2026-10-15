@@ -256,6 +256,80 @@
       ]
     },
     {
+      "id": "travel",
+      "title": "Travel & Luggage",
+      "subtitle": "Carry-on to weekender",
+      "icon": "suitcase",
+      "items": [
+        {
+          "id": "travel-1",
+          "brand": "Louis Vuitton",
+          "name": "Keepall Bandoulière 50, Monogram",
+          "condition": "Excellent",
+          "price": 7900,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "travel-2",
+          "brand": "Rimowa",
+          "name": "Original Cabin, Silver",
+          "condition": "Very good",
+          "price": 3900,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "travel-3",
+          "brand": "Louis Vuitton",
+          "name": "Horizon 55 Rolling Luggage, Damier Graphite",
+          "condition": "Excellent",
+          "price": 11500,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "travel-4",
+          "brand": "Goyard",
+          "name": "Bourget PM Trolley, Black",
+          "condition": "Very good",
+          "price": 17500,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "travel-5",
+          "brand": "Gucci",
+          "name": "Savoy Duffle, GG Supreme",
+          "condition": "Excellent",
+          "price": 8200,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "travel-6",
+          "brand": "Prada",
+          "name": "Re-Nylon Backpack, Black",
+          "condition": "Very good",
+          "price": 3600,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
+    },
+    {
       "id": "jewelry",
       "title": "Jewellery",
       "subtitle": "Certified gold",
@@ -618,6 +692,80 @@
           "name": "CC Cashmere Scarf",
           "condition": "Excellent",
           "price": 2200,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "title": "Home & Décor",
+      "subtitle": "For the house",
+      "icon": "home",
+      "items": [
+        {
+          "id": "home-1",
+          "brand": "Hermès",
+          "name": "Avalon Throw Blanket, Écru",
+          "condition": "Like new",
+          "price": 6900,
+          "was": null,
+          "tag": "New in",
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "home-2",
+          "brand": "Hermès",
+          "name": "Mosaïque au 24 Dinner Plates, set of 2",
+          "condition": "Like new",
+          "price": 2400,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "home-3",
+          "brand": "Fornasetti",
+          "name": "Tema e Variazioni Wall Plate",
+          "condition": "Excellent",
+          "price": 950,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "home-4",
+          "brand": "Baccarat",
+          "name": "Harcourt Tumblers, pair",
+          "condition": "Excellent",
+          "price": 2100,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "home-5",
+          "brand": "Lalique",
+          "name": "Bacchantes Crystal Vase",
+          "condition": "Excellent",
+          "price": 9800,
+          "was": null,
+          "tag": null,
+          "image": "",
+          "sold": false
+        },
+        {
+          "id": "home-6",
+          "brand": "Louis Vuitton",
+          "name": "Monogram Cushion",
+          "condition": "Very good",
+          "price": 2900,
           "was": null,
           "tag": null,
           "image": "",

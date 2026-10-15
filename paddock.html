@@ -100,7 +100,7 @@ function pass(t, i) {
 
 (async () => {
   const D = await loadProducts();
-  renderHeader({ chips: D.categories.filter(c => c.items.length).map(c => ({ title: c.title, href: "/category.html?c=" + c.id })), paddock: true });
+  renderHeader({ chips: D.categories.filter(c => c.items.length).map(c => ({ title: c.title, href: "/category?c=" + c.id })), paddock: true });
 })();
 
 document.getElementById("fan").innerHTML = [TIERS[1], TIERS[0], TIERS[2]].map(pass).join("");

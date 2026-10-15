@@ -62,7 +62,9 @@ const CAT_ICON = {
   shades: '<path d="M6 28h52"/><path d="M8 28c0 10 4 14 11 14s10-5 10-14"/><path d="M35 28c0 9 3 14 10 14s11-4 11-14"/><path d="M29 30q3-3 6 0"/>',
   wallet: '<rect x="8" y="18" width="48" height="32" rx="3"/><path d="M8 26h48"/><rect x="40" y="32" width="16" height="10" rx="2"/>',
   coat: '<path d="M24 8 14 14 8 34l6 2 4-12v32h28V24l4 12 6-2-6-20-10-6-8 10z"/><path d="M32 18v38"/>',
-  belt: '<path d="M4 26h56v12H4z"/><rect x="22" y="22" width="20" height="20" rx="3"/><path d="M32 26v12"/>'
+  belt: '<path d="M4 26h56v12H4z"/><rect x="22" y="22" width="20" height="20" rx="3"/><path d="M32 26v12"/>',
+  suitcase: '<rect x="14" y="18" width="36" height="36" rx="4"/><path d="M25 18v-6h14v6"/><path d="M24 26v20M32 26v20M40 26v20"/><circle cx="20" cy="58" r="2"/><circle cx="44" cy="58" r="2"/>',
+  home: '<path d="M22 8h20l6 18H16z"/><path d="M32 26v20"/><path d="M22 56h20l-3-10H25z"/>'
 };
 const catIcon = k => `<svg class="ic" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${CAT_ICON[k] || CAT_ICON.bag}</svg>`;
 const MONO = '<svg viewBox="0 0 100 100" aria-hidden="true"><line x1="25" y1="82" x2="75" y2="18" stroke="#c9ad7f" stroke-width="2.2"/><path d="M27 22 L35 14 V50 M63 58 L71 50 V86" fill="none" stroke="#efe9df" stroke-width="3" stroke-linecap="square"/></svg>';
@@ -84,7 +86,7 @@ const media = (it, big) => it.image
 function cardHTML(it) {
   const fav = getFavs().includes(it.id);
   return `<article class="card" data-id="${esc(it.id)}">
-    <a class="ph" href="/product.html?id=${encodeURIComponent(it.id)}" aria-label="${esc(it.brand + " " + it.name)}">
+    <a class="ph" href="/product?id=${encodeURIComponent(it.id)}" aria-label="${esc(it.brand + " " + it.name)}">
       ${media(it)}
       ${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ""}
       <span class="auth">${sv(I.check, 11, "none", 2)}Authenticated</span>
@@ -92,7 +94,7 @@ function cardHTML(it) {
       ${it.sold ? '<span class="sold">SOLD</span>' : ""}
     </a>
     <button class="fav${fav ? " on" : ""}" aria-label="Save ${esc(it.brand)}"></button>
-    <a class="meta" href="/product.html?id=${encodeURIComponent(it.id)}">
+    <a class="meta" href="/product?id=${encodeURIComponent(it.id)}">
       <span class="brandname">${esc(it.brand)}</span>
       <span class="pname">${esc(it.name)}</span>
       <span class="price"><b>${money(it.price)}</b>${it.was ? `<s>${money(it.was)}</s>` : ""}</span>
@@ -114,7 +116,11 @@ const ALIASES = {
   glasses: "sunglasses", shades: "sunglasses", eyewear: "sunglasses",
   wallet: "wallets small leather", cardholder: "card holder wallets", card: "card holder",
   coat: "clothing coat", jacket: "clothing jacket", blazer: "clothing blazer", dress: "clothing dress", jumper: "clothing sweater", sweater: "clothing sweater",
-  belt: "belts", scarf: "scarves carre silk", scarves: "belts and scarves"
+  belt: "belts", scarf: "scarves carre silk", scarves: "belts and scarves",
+  travel: "travel luggage", luggage: "travel luggage", suitcase: "luggage rolling", trolley: "luggage rolling trolley", carryon: "cabin luggage", cabin: "cabin luggage",
+  duffle: "duffle travel", duffel: "duffle travel", weekender: "keepall duffle travel", keepall: "keepall louis vuitton", backpack: "backpack travel", rimowa: "rimowa luggage",
+  home: "home decor", decor: "home decor", house: "home decor", blanket: "throw blanket home", throw: "throw blanket", cushion: "cushion home", pillow: "cushion home",
+  plate: "plates home", plates: "plates home", vase: "vase crystal home", crystal: "crystal home"
 };
 function lev(a, b, max) {
   if (Math.abs(a.length - b.length) > max) return max + 1;
@@ -178,19 +184,19 @@ function renderHeader(opts = {}) {
   const el = document.getElementById("hdr");
   el.className = "top";
   el.innerHTML = `
-  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; <a href="/login.html">${u ? "My account <b>·</b> Orders &amp; coupons" : "15% off your first order <b>·</b> Sign in"}</a> &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
+  <div class="ship">UAE <b>·</b> Same-day delivery &nbsp;&nbsp;&nbsp; Worldwide <b>·</b> Within a week &nbsp;&nbsp;&nbsp; <a href="/login">${u ? "My account <b>·</b> Orders &amp; coupons" : "15% off your first order <b>·</b> Sign in"}</a> &nbsp;&nbsp;&nbsp; <a href="tel:+971562422121">056 242 2121</a> <b>·</b> <a href="mailto:info@1of1.ae">info@1of1.ae</a></div>
   <div class="gut">
     <div class="bar">
       <a class="brand" href="/" aria-label="1 OF 1 home">${MONO}<span>1 OF 1</span></a>
       <form class="search" role="search" id="qf" action="/"><label for="q" style="display:flex;color:inherit">${sv(I.search, 16)}</label><input id="q" name="q" type="search" placeholder="Search Rolex, Birkin, gold bracelet…" autocomplete="off" enterkeyhint="search"></form>
       <div class="tools">
         <select class="cur" id="cur" aria-label="Currency">${Object.keys(STORE.rates).map(c => `<option${c === getCur() ? " selected" : ""}>${c}</option>`).join("")}</select>
-        <a class="who" href="/login.html">${u ? "My account" : "Sign in"}</a>
-        <a class="icon-btn" href="/login.html" aria-label="Account" style="display:none" id="acct">${sv(I.user, 20)}</a>
-        <a class="icon-btn" href="/cart.html" aria-label="Your bag">${sv(I.bag, 20)}<span class="n" id="bagN" hidden>0</span></a>
+        <a class="who" href="/login">${u ? "My account" : "Sign in"}</a>
+        <a class="icon-btn" href="/login" aria-label="Account" style="display:none" id="acct">${sv(I.user, 20)}</a>
+        <a class="icon-btn" href="/cart" aria-label="Your bag">${sv(I.bag, 20)}<span class="n" id="bagN" hidden>0</span></a>
       </div>
     </div>
-    ${opts.chips ? `<nav class="chips" aria-label="Categories">${opts.chips.map(c => `<a href="${c.href}"${c.on ? ' class="on"' : ""}>${esc(c.title)}</a>`).join("")}<a href="/paddock.html" class="pad-chip${opts.paddock ? " on" : ""}">F1 Paddock <sup>Soon</sup></a></nav>` : ""}
+    ${opts.chips ? `<nav class="chips" aria-label="Categories">${opts.chips.map(c => `<a href="${c.href}"${c.on ? ' class="on"' : ""}>${esc(c.title)}</a>`).join("")}<a href="/paddock" class="pad-chip${opts.paddock ? " on" : ""}">F1 Paddock <sup>Soon</sup></a></nav>` : ""}
   </div>`;
   if (matchMedia("(max-width:760px)").matches) document.getElementById("acct").style.display = "grid";
   document.getElementById("cur").onchange = e => { store.set("oo_cur", e.target.value); location.reload(); };
@@ -210,7 +216,7 @@ function maybeOffer() {
     <div class="big">15<span>%</span></div>
     <h2 id="offerT">Off your first order</h2>
     <p>Create your account with your mobile number. Your discount is applied automatically at checkout.</p>
-    <a class="btn" href="/login.html">Create account · Get 15% off</a>
+    <a class="btn" href="/login">Create account · Get 15% off</a>
     <button class="later">Maybe later</button>
   </div>`;
   const close = () => bg.remove();

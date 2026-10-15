@@ -30,11 +30,11 @@
 (async () => {
   const D = await loadProducts();
   const it = D.byId[new URLSearchParams(location.search).get("id")];
-  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category.html?c=" + c.id, on: it && c.id === it.cat.id })) });
+  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category?c=" + c.id, on: it && c.id === it.cat.id })) });
   const box = document.getElementById("pdp");
   if (!it) { box.innerHTML = '<div class="empty">This piece is no longer listed.<a class="btn" href="/">Browse pieces</a></div>'; return; }
-  document.title = `1 OF 1 · ${it.brand} ${it.name}`;
-  const back = document.getElementById("back"); back.href = "/category.html?c=" + it.cat.id; back.textContent = "← " + it.cat.title;
+  if (!document.querySelector("link[rel=canonical]")) document.title = `1 OF 1 · ${it.brand} ${it.name}`;
+  const back = document.getElementById("back"); back.href = "/category?c=" + it.cat.id; back.textContent = "← " + it.cat.title;
   const inBag = () => getCart().includes(it.id);
   const ask = encodeURIComponent(`Hello 1 OF 1, I'm interested in the ${it.brand} ${it.name} (${aed(it.price)}). Ref ${it.id}`);
   box.innerHTML = `
@@ -62,7 +62,7 @@
   const paint = () => add.textContent = it.sold ? "Sold" : inBag() ? "In your bag · View bag" : "Add to bag";
   paint();
   add.onclick = () => {
-    if (inBag()) { location.href = "/cart.html"; return; }
+    if (inBag()) { location.href = "/cart"; return; }
     setCart([...getCart(), it.id]); paint();
   };
 })();

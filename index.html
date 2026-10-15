@@ -24,7 +24,7 @@
 <div class="gut">
   <div class="intro">
     <h1>Find anything <em>you wish you had.</em></h1>
-    <p>Authenticated watches, handbags and jewellery from the houses that matter. Can't see it here? Message us, we'll find it.</p>
+    <p>Authentic pre-owned watches, designer bags, shoes, travel and home pieces from the houses that matter. Can't see it here? Message us, we'll find it.</p>
   </div>
 </div>
 <main class="gut" id="main"><p class="muted">Loading pieces…</p></main>
@@ -32,6 +32,23 @@
   <div class="head" style="margin-bottom:0"><div><h2 id="rTitle"></h2><small id="rSub"></small></div><button class="all" id="rClear" style="background:none;border:0;cursor:pointer">Clear search</button></div>
   <div class="grid" id="rGrid"></div>
   <div id="simWrap" hidden><div class="head"><div><h2 style="font-size:22px">Similar pieces</h2><small>You might also like</small></div></div><div class="grid" id="sGrid"></div></div>
+</section>
+<section class="gut about" id="about">
+  <div class="about-copy">
+    <span class="t-k">About 1 OF 1</span>
+    <h2>Pre-owned luxury in Dubai. <em>Every piece a 1 of 1.</em></h2>
+    <p>1 OF 1 is an online store for authentic pre-owned luxury in the UAE. We sell pre-owned Rolex, Patek Philippe and Audemars Piguet watches, preloved Hermès, Chanel and Louis Vuitton bags, designer shoes and sneakers, travel bags and luggage, fine jewellery, clothing and luxury home décor.</p>
+    <p>Every item is a one-of-one piece in the best condition we can find. Each one is checked by hand before it ships and graded honestly. Delivery is same-day across Dubai, Abu Dhabi, Sharjah and the rest of the UAE, and worldwide within a week. Can't see what you want? Show us the piece and we'll find it.</p>
+    <p class="ar" lang="ar" dir="rtl">ساعات وحقائب ماركات فاخرة مستعملة وأصلية في دبي. توصيل في نفس اليوم داخل الإمارات وشحن لجميع دول العالم.</p>
+  </div>
+  <div class="faq">
+    <h3>Questions</h3>
+    <details><summary>Are your pieces authentic?</summary><p>Yes. Every piece is checked by hand before it ships and its condition is graded honestly, so you know exactly what you are getting.</p></details>
+    <details><summary>How fast is delivery in the UAE?</summary><p>Same-day delivery across the UAE. Worldwide orders arrive within a week.</p></details>
+    <details><summary>Can you find a piece you don't have listed?</summary><p>Yes. Show us the watch, bag or item you want and we find it, often in under a day. Message us on WhatsApp at +971 56 242 2121.</p></details>
+    <details><summary>How do I pay?</summary><p>Pay on delivery, in cash or by card / online payment at the door. Card and Apple Pay checkout online are coming soon.</p></details>
+    <details><summary>Is there a discount on my first order?</summary><p>Yes. Create an account and get 15% off your first order, applied automatically at checkout.</p></details>
+  </div>
 </section>
 <footer id="ftr"></footer>
 <script>
@@ -43,7 +60,7 @@
   cats.forEach(c => {
     const s = document.createElement("section"); s.className = "shelf"; s.id = c.id;
     s.innerHTML = `<div class="head"><div><h2>${esc(c.title)}</h2><small>${c.items.length} ${c.items.length === 1 ? "piece" : "pieces"} · ${esc(c.subtitle)}</small></div>
-      <div class="ctrl"><a class="all" href="/category.html?c=${c.id}">View all</a>
+      <div class="ctrl"><a class="all" href="/category?c=${c.id}">View all</a>
       <button class="arrow" data-d="-1" aria-label="Scroll ${esc(c.title)} left">${sv(I.left, 16)}</button>
       <button class="arrow" data-d="1" aria-label="Scroll ${esc(c.title)} right">${sv(I.right, 16)}</button></div></div>
       <div class="row">${c.items.map(cardHTML).join("")}</div>`;
@@ -53,7 +70,7 @@
     [l, r].forEach(a => a.onclick = () => row.scrollBy({ left: a.dataset.d * row.clientWidth * .85 }));
     row.addEventListener("scroll", upd, { passive: true }); requestAnimationFrame(upd); addEventListener("resize", upd);
     if (c === cats[0]) {
-      main.insertAdjacentHTML("beforeend", `<a class="pad-tease" href="/paddock.html">
+      main.insertAdjacentHTML("beforeend", `<a class="pad-tease" href="/paddock">
         <div><span class="soon">Pre-book now</span><h2>F1 Paddock <em>tickets.</em></h2>
         <p>Abu Dhabi Grand Prix, December 2026. UAE only. Send us an inquiry and we'll hold your ticket the moment it's released.</p><span class="go">Pre-book your pass →</span></div>
         <div class="mini-fan" aria-hidden="true">${[["PC","Paddock Club","gold"],["GRG","F1 Garage","garage"],["TS","Team Suite","blue"]].map(([c, n, h], k) => `<div class="mpass p-${h}" style="--i:${k}"><span class="slot"></span><b>${c}</b><small>${n}</small><i class="bars"></i></div>`).join("")}</div></a>`);
@@ -63,7 +80,7 @@
   const q = document.getElementById("q"), intro = document.querySelector(".intro").parentElement, res = document.getElementById("results");
   const run = () => {
     const term = q.value.trim();
-    main.hidden = !!term; intro.hidden = !!term; res.hidden = !term;
+    main.hidden = !!term; intro.hidden = !!term; res.hidden = !term; document.getElementById("about").hidden = !!term;
     if (!term) return;
     const { results, similar } = searchProducts(d, term);
     document.getElementById("rTitle").textContent = results.length ? `Results for “${term}”` : `No exact match for “${term}”`;

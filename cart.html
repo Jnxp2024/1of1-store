@@ -110,7 +110,7 @@ function paintTotals(q, mode) {
   const sums = document.getElementById("sums");
   let html = "";
   if (q.discount > 0) html = `<div class="sumline"><span>Subtotal</span><span>${money(q.subtotal)}</span></div><div class="sumline disc"><span>First order · 15% off</span><span>− ${money(q.discount)}</span></div>`;
-  else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login.html?next=cart" style="color:var(--champagne)">Create an account or sign in</a> and it's applied automatically.</div></div>`;
+  else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login?next=cart" style="color:var(--champagne)">Create an account or sign in</a> and it's applied automatically.</div></div>`;
   sums.innerHTML = html;
   document.getElementById("total").textContent = money(q.total);
   document.getElementById("curNote").textContent = getCur() !== "AED" ? `Approximate. You pay ${aed(q.total)}.` : "";
@@ -126,7 +126,7 @@ async function quote(u, its) {
 function items() { return getCart().map(id => D.byId[id]).filter(i => i && !i.sold); }
 function draw() {
   const its = items(), list = document.getElementById("list");
-  list.innerHTML = its.length ? its.map(it => `<div class="line"><a class="ph" href="/product.html?id=${encodeURIComponent(it.id)}">${media(it)}</a>
+  list.innerHTML = its.length ? its.map(it => `<div class="line"><a class="ph" href="/product?id=${encodeURIComponent(it.id)}">${media(it)}</a>
       <div style="min-width:0"><div class="brandname">${esc(it.brand)}</div><div class="pname">${esc(it.name)}</div><button class="x" data-id="${esc(it.id)}">Remove</button></div>
       <b style="font-weight:400;font-variant-numeric:tabular-nums">${money(it.price)}</b></div>`).join("")
     : '<div class="empty">Your bag is empty.<a class="btn" href="/">Browse the collection</a></div>';
@@ -135,7 +135,7 @@ function draw() {
   const u = getUser();
   paintTotals({ subtotal: sum, discount: 0, total: sum }, u ? "checking" : "signin");
   if (u && its.length) quote(u, its);
-  document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login.html" style="color:var(--champagne)">change</a>` : "Next, sign in or create your account. It takes a few seconds.";
+  document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login" style="color:var(--champagne)">change</a>` : "Next, sign in or create your account. It takes a few seconds.";
   document.getElementById("place").textContent = u ? "Place order" : "Sign in or create account to order";
   return its;
 }
@@ -147,7 +147,7 @@ function draw() {
   document.getElementById("list").onclick = e => { const b = e.target.closest(".x"); if (b) { setCart(getCart().filter(x => x !== b.dataset.id)); draw(); } };
   document.getElementById("place").onclick = async () => {
     const u = getUser();
-    if (!u) { location.href = "/login.html?next=cart"; return; }
+    if (!u) { location.href = "/login?next=cart"; return; }
     const its = draw(), err = document.getElementById("err"), btn = document.getElementById("place");
     const addr = $("addr").value.trim();
     if (MODE === "live" && !LOC) { err.textContent = "Tap “Share my location”, or switch to entering your address manually."; return; }

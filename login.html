@@ -69,7 +69,7 @@
       <div class="orders" id="myOrders"><p class="muted">Loading…</p></div>
     </div>
 
-    <a class="btn" href="/cart.html" style="align-self:flex-start">Go to your bag</a>
+    <a class="btn" href="/cart" style="align-self:flex-start">Go to your bag</a>
   </div>
 </main>
 <footer id="ftr"></footer>
@@ -95,7 +95,7 @@ const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Typ
 function done(j) {
   setUser({ name: j.name, phone: j.phone, token: j.token });
   const next = new URLSearchParams(location.search).get("next");
-  if (next === "cart") location.href = "/cart.html"; else show();
+  if (next === "cart") location.href = "/cart"; else show();
 }
 $("form").addEventListener("submit", async e => {
   e.preventDefault();

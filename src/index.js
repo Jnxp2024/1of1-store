@@ -1,3 +1,4 @@
+import { serveSite } from "./seo.js";
 // 1 OF 1 store — Cloudflare Worker.
 // Serves the site from static assets and handles the order API under /api/*.
 // Bindings (wrangler.jsonc): ASSETS (the site), DB (D1 "oneofone-store").
@@ -269,6 +270,6 @@ export default {
         return json({ ok: false, error: "Server error" }, 500);
       }
     }
-    return env.ASSETS.fetch(request);
+    return serveSite(request, env);
   },
 };
