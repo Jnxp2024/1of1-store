@@ -109,7 +109,7 @@ async function loadSaved() {
 function paintTotals(q, mode) {
   const sums = document.getElementById("sums");
   let html = "";
-  if (q.discount > 0) html = `<div class="sumline"><span>Subtotal</span><span>${money(q.subtotal)}</span></div><div class="sumline disc"><span>First order · 15% off</span><span>− ${money(q.discount)}</span></div>`;
+  if (q.discount > 0) html = `<div class="sumline"><span>Subtotal</span><span>${money(q.subtotal)}</span></div><div class="sumline disc"><span>${esc(q.label || "First order · 15% off")}</span><span>− ${money(q.discount)}</span></div>`;
   else if (mode === "signin") html = `<div class="promo" style="margin-top:6px"><b>15%</b><div><strong>Off your first order</strong><a href="/login?next=cart" style="color:var(--champagne)">Create an account or sign in</a> and it's applied automatically.</div></div>`;
   sums.innerHTML = html;
   document.getElementById("total").textContent = money(q.total);
@@ -165,7 +165,7 @@ function draw() {
       store.set("oo_orders", [{ id: j.id, token: j.token }, ...store.get("oo_orders", [])].slice(0, 100));
       document.getElementById("list").hidden = true; document.getElementById("checkout").hidden = true;
       document.getElementById("done").hidden = false;
-      document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}` + (j.discount ? ` (15% off, you saved ${aed(j.discount)})` : "");
+      document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}` + (j.discount ? ` (${j.label || "15% off"}, you saved ${aed(j.discount)})` : "");
       const msg = encodeURIComponent(`Hello 1 OF 1, I just placed order #${j.id} (${aed(j.total)}).`);
       document.getElementById("waBtn").href = `https://wa.me/${STORE.whatsapp}?text=${msg}`;
     } catch (e) {

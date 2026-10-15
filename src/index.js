@@ -7,6 +7,24 @@ import { serveSite } from "./seo.js";
 const STATUSES = ["pending", "shipped", "delivered", "cancelled"];
 const PAID_METHODS = ["cash", "card", "online", "applepay"];
 const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
+// Loyalty: every AED 5,000 of delivered spend earns one 15% coupon for a future order.
+const LOYALTY_STEP = 5000, LOYALTY_DISCOUNT = 0.15;
+const DISCOUNT_LABEL = { welcome: "Welcome 15% · first order", loyalty: "Loyalty 15% · AED 5,000 reward" };
+
+// Where a customer stands: welcome bonus, loyalty coupons earned/used/available, progress.
+async function rewards(env, phone) {
+  const r = await env.DB.prepare(`SELECT
+      COUNT(CASE WHEN status != 'cancelled' THEN 1 END) AS live,
+      COALESCE(SUM(CASE WHEN status = 'delivered' THEN total_aed END), 0) AS spent,
+      COUNT(CASE WHEN status != 'cancelled' AND discount_kind = 'loyalty' THEN 1 END) AS used
+    FROM orders WHERE phone = ?`).bind(phone).first();
+  const spent = r ? r.spent : 0, earned = Math.floor(spent / LOYALTY_STEP), used = r ? r.used : 0;
+  return {
+    welcome: !r || r.live === 0,
+    spent, earned, used, available: Math.max(0, earned - used),
+    next: (earned + 1) * LOYALTY_STEP, toNext: (earned + 1) * LOYALTY_STEP - spent
+  };
+}
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -118,16 +136,21 @@ async function me(request, env) {
   const c = await currentCustomer(request, env);
   if (!c) return json({ ok: false, error: "Signed out" }, 401);
   const { results } = await env.DB.prepare(
-    "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
+    "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE phone = ? ORDER BY id DESC LIMIT 200"
   ).bind(c.phone).all();
   const live = results.filter(o => o.status !== "cancelled");
+  const rw = await rewards(env, c.phone);
   return json({
     ok: true,
     customer: { name: c.name, phone: c.phone, avatar: c.avatar || null, address: c.address ? JSON.parse(c.address) : null },
     orders: results,
     spent: live.reduce((s, o) => s + o.total_aed, 0),
     saved: live.reduce((s, o) => s + (o.discount_aed || 0), 0),
-    coupons: [{ code: "WELCOME15", percent: 15, label: "Off your first order", active: live.length === 0 }]
+    rewards: rw,
+    coupons: [
+      { code: "WELCOME15", percent: 15, label: "Off your first order", active: rw.welcome },
+      ...Array.from({ length: rw.earned }, (_, i) => ({ code: "LOYAL15-" + (i + 1), percent: 15, label: `Reward for AED ${((i + 1) * LOYALTY_STEP).toLocaleString("en-US")} spent`, active: i >= rw.used }))
+    ]
   });
 }
 
@@ -149,13 +172,14 @@ async function price(request, env, ids, phone) {
   const items = ids.map(id => catalog[id]).filter(it => it && !it.sold)
     .map(it => ({ id: it.id, brand: it.brand, name: it.name, price: it.price }));
   const subtotal = items.reduce((s, i) => s + i.price, 0);
-  let firstOrder = false;
+  let kind = null;
   if (phone) {
-    const prev = await env.DB.prepare("SELECT COUNT(*) AS n FROM orders WHERE phone = ? AND status != 'cancelled'").bind(phone).first();
-    firstOrder = !prev || prev.n === 0;
+    const rw = await rewards(env, phone);
+    kind = rw.welcome ? "welcome" : rw.available > 0 ? "loyalty" : null;
   }
-  const discount = firstOrder ? Math.round(subtotal * FIRST_ORDER_DISCOUNT) : 0;
-  return { items, subtotal, discount, total: subtotal - discount, firstOrder };
+  const firstOrder = kind === "welcome";
+  const discount = kind ? Math.round(subtotal * (kind === "welcome" ? FIRST_ORDER_DISCOUNT : LOYALTY_DISCOUNT)) : 0;
+  return { items, subtotal, discount, total: subtotal - discount, firstOrder, kind, label: kind ? DISCOUNT_LABEL[kind] : null };
 }
 
 async function quote(request, env) {
@@ -163,7 +187,7 @@ async function quote(request, env) {
   const phone = String(b.phone || "").replace(/\D/g, "");
   const ids = Array.isArray(b.items) ? [...new Set(b.items.map(String))].slice(0, 20) : [];
   const q = await price(request, env, ids, phone.length >= 9 ? phone : "");
-  return json({ ok: true, subtotal: q.subtotal, discount: q.discount, total: q.total, firstOrder: q.firstOrder });
+  return json({ ok: true, subtotal: q.subtotal, discount: q.discount, total: q.total, firstOrder: q.firstOrder, kind: q.kind, label: q.label });
 }
 
 // Customer places an order. Prices come from products.json on the server.
@@ -192,13 +216,13 @@ async function createOrder(request, env) {
   if (!q.items.length) return json({ ok: false, error: "These pieces are no longer available" }, 409);
   const token = crypto.randomUUID().replace(/-/g, "");
   const res = await env.DB.prepare(
-    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token, lat, lng, payment) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token, lat, lng, payment).run();
+    "INSERT INTO orders (name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, token, lat, lng, payment, discount_kind) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(name, phone, delivery, note, JSON.stringify(q.items), q.subtotal, q.discount, q.total, token, lat, lng, payment, q.kind).run();
   if (who && b.saveAddress) {
     const saved = JSON.stringify({ zone: String(b.zone || "uae").slice(0, 10), text: note, lat, lng });
     await env.DB.prepare("UPDATE customers SET address = ? WHERE id = ?").bind(saved, who.id).run();
   }
-  return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total });
+  return json({ ok: true, id: res.meta.last_row_id, token, subtotal: q.subtotal, discount: q.discount, total: q.total, label: q.label });
 }
 
 // Customer's own orders. The browser keeps each order's private token from checkout,
@@ -211,7 +235,7 @@ async function myOrders(request, env) {
     const id = Number(r && r.id), token = String((r && r.token) || "");
     if (!Number.isInteger(id) || !/^[a-f0-9]{32}$/.test(token)) continue;
     const row = await env.DB.prepare(
-      "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders WHERE id = ? AND token = ?"
+      "SELECT id, created_at, name, phone, items, subtotal_aed, discount_aed, total_aed, status, delivery, note, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE id = ? AND token = ?"
     ).bind(id, token).first();
     if (row) out.push(row);
   }
@@ -221,7 +245,7 @@ async function myOrders(request, env) {
 
 async function listOrders(request, env) {
   if (!isAdmin(request, env)) return json({ ok: false, error: "Unauthorized" }, 401);
-  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment, paid, paid_method, paid_at, status_at FROM orders ORDER BY id DESC LIMIT 500").all();
+  const { results } = await env.DB.prepare("SELECT id, created_at, name, phone, delivery, note, items, subtotal_aed, discount_aed, total_aed, status, lat, lng, payment, paid, paid_method, paid_at, status_at, discount_kind FROM orders ORDER BY id DESC LIMIT 500").all();
   return json({ ok: true, orders: results });
 }
 
@@ -243,7 +267,7 @@ async function setStatus(request, env, id) {
       await env.DB.prepare("UPDATE orders SET paid = 1, paid_method = ?, paid_at = datetime('now') WHERE id = ?").bind(b.paid_method, id).run();
     } else return json({ ok: false, error: "Bad payment method" }, 400);
   }
-  const o = await env.DB.prepare("SELECT status, paid, paid_method, paid_at, status_at FROM orders WHERE id = ?").bind(id).first();
+  const o = await env.DB.prepare("SELECT status, paid, paid_method, paid_at, status_at, discount_kind FROM orders WHERE id = ?").bind(id).first();
   return json({ ok: true, order: o });
 }
 

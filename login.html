@@ -26,7 +26,7 @@
   <div class="narrow" id="signin" style="padding-top:48px">
     <div><div class="eyebrow" id="eb">Sign in or create account</div><h1 class="page-title" id="h">Welcome to 1 OF 1</h1>
     <p class="muted" id="sub">Enter your mobile number. We'll check if you already have an account.</p></div>
-    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout.</div></div>
+    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout. Then every AED 5,000 you spend earns another 15% off.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
       <div class="f"><label for="phone">Mobile number</label>
         <div id="phoneHost"></div>
@@ -61,6 +61,7 @@
 
     <div>
       <p class="sec-title">My coupons</p>
+      <div class="reward" id="reward"></div>
       <div id="coupons"></div>
     </div>
 
@@ -139,6 +140,14 @@ async function loadAccount() {
   const live = j.orders.filter(o => o.status !== "cancelled");
   $("stats").innerHTML = [["Orders", live.length], ["Total spent", money(j.spent)], ["You saved", money(j.saved)]]
     .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  const rw = j.rewards;
+  if (rw) {
+    const into = rw.spent % 5000, pct = Math.round(into / 50);
+    $("reward").innerHTML = `<div class="rw-top"><span>Loyalty rewards</span><b>${rw.available} ${rw.available === 1 ? "coupon" : "coupons"} ready</b></div>
+      <div class="rw-bar"><i style="width:${pct}%"></i></div>
+      <div class="rw-foot"><span>${money(into)} of ${money(5000)}</span><span>${money(rw.toNext)} more to your next 15% off</span></div>
+      <p class="muted">Every AED 5,000 you spend on delivered orders earns a 15% coupon. It's applied automatically to your next order, one coupon per order.</p>`;
+  }
   $("coupons").innerHTML = j.coupons.map(c => `<div class="coupon${c.active ? "" : " used"}">
       <div class="pct">${c.percent}%</div>
       <div><div class="code">${esc(c.code)}</div><div class="muted" style="font-size:13px">${esc(c.label)} · applied automatically at checkout</div></div>

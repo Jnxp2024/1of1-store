@@ -461,3 +461,11 @@ label.mini .in{width:auto;font-size:14px;letter-spacing:normal;text-transform:no
 .faq details p{margin:0 0 16px;color:var(--ivory-dim);line-height:1.7;font-size:14px}
 @media (max-width:760px){.about{grid-template-columns:1fr;gap:32px;padding-block:48px}}
 .kicker{font-size:12px!important;letter-spacing:.24em;text-transform:uppercase;color:var(--champagne)!important;margin-top:-6px!important}
+
+/* loyalty progress on the account page */
+.reward{border:1px solid rgba(201,173,127,.35);padding:18px 20px;margin-bottom:14px;display:flex;flex-direction:column;gap:10px}
+.rw-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ivory-dim)}
+.rw-top b{font-weight:400;color:var(--champagne);letter-spacing:.14em}
+.rw-bar{height:4px;background:var(--hair-2);overflow:hidden}.rw-bar i{display:block;height:100%;background:var(--champagne)}
+.rw-foot{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--ivory);flex-wrap:wrap}
+.reward p{margin:0;font-size:12.5px;line-height:1.6}

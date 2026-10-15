@@ -89,7 +89,7 @@ async function downloadReceipt(o, btn) {
     const sub = o.subtotal_aed || o.total_aed;
     const row = (k, v, opt = {}) => { txt(k, R - 200, y, { s: opt.s || 10, b: opt.b, c: opt.c || dim }); txt(v, R, y, { s: opt.s || 10, b: opt.b, a: "right", c: opt.vc || ink }); y += opt.gap || 18; };
     row("Subtotal", _aed(sub));
-    if (o.discount_aed) row("First order 15%", "- " + _aed(o.discount_aed), { vc: gold });
+    if (o.discount_aed) row(o.discount_kind === "loyalty" ? "Loyalty reward 15%" : "First order 15%", "- " + _aed(o.discount_aed), { vc: gold });
     row("Delivery", "Free");
     doc.setDrawColor(...ink); doc.setLineWidth(0.8); doc.line(R - 200, y - 6, R, y - 6); y += 10;
     row("Total", _aed(o.total_aed), { s: 13, b: true, c: ink, gap: 34 });
