@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Piece</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<main class="gut" style="gap:0">
+  <a class="back" href="/" id="back">← Back</a>
+  <div class="pdp" id="pdp"><p class="muted">Loading…</p></div>
+</main>
+<footer id="ftr"></footer>
+<script>
+(async () => {
+  const D = await loadProducts();
+  const it = D.byId[new URLSearchParams(location.search).get("id")];
+  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category.html?c=" + c.id, on: it && c.id === it.cat.id })) });
+  const box = document.getElementById("pdp");
+  if (!it) { box.innerHTML = '<div class="empty">This piece is no longer listed.<a class="btn" href="/">Browse pieces</a></div>'; return; }
+  document.title = `1 OF 1 · ${it.brand} ${it.name}`;
+  const back = document.getElementById("back"); back.href = "/category.html?c=" + it.cat.id; back.textContent = "← " + it.cat.title;
+  const inBag = () => getCart().includes(it.id);
+  const ask = encodeURIComponent(`Hello 1 OF 1, I'm interested in the ${it.brand} ${it.name} (${aed(it.price)}). Ref ${it.id}`);
+  box.innerHTML = `
+    <div class="ph">${media(it, true)}${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ""}${it.sold ? '<span class="sold">SOLD</span>' : ""}</div>
+    <div class="pdp-info">
+      <div class="eyebrow">${esc(it.brand)}</div>
+      <h1>${esc(it.name)}</h1>
+      <div class="pdp-price"><span>${money(it.price)}</span>${it.was ? `<s>${money(it.was)}</s>` : ""}</div>
+      ${getCur() !== "AED" ? `<p class="muted" style="margin:0;font-size:13px">Approximate. You pay ${aed(it.price)}.</p>` : ""}
+      <button class="btn wide" id="add" ${it.sold ? "disabled" : ""}></button>
+      <a class="btn ghost wide" href="https://wa.me/${STORE.whatsapp}?text=${ask}" target="_blank" rel="noopener">Ask on WhatsApp</a>
+      <dl class="specs">
+        <dt>Condition</dt><dd>${esc(it.condition || "—")}</dd>
+        <dt>Category</dt><dd>${esc(it.cat.title)}</dd>
+        <dt>Reference</dt><dd>${esc(it.id.toUpperCase())}</dd>
+      </dl>
+      <div class="promise">
+        <div>${sv(I.shield, 20)}Authenticated by hand before it ships</div>
+        <div>${sv(I.truck, 20)}Same-day delivery across the UAE</div>
+        <div>${sv(I.globe, 20)}Worldwide, insured, within a week</div>
+      </div>
+    </div>`;
+  const add = document.getElementById("add");
+  const paint = () => add.textContent = it.sold ? "Sold" : inBag() ? "In your bag · View bag" : "Add to bag";
+  paint();
+  add.onclick = () => {
+    if (inBag()) { location.href = "/cart.html"; return; }
+    setCart([...getCart(), it.id]); paint();
+  };
+})();
+</script>
+</body>
+</html>

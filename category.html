@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Collection</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<main class="gut" style="gap:28px">
+  <div>
+    <a class="back" href="/">← All categories</a>
+    <div class="cat-head">
+      <div><div class="eyebrow" id="count">&nbsp;</div><h1 class="page-title" id="title">&nbsp;</h1></div>
+      <label class="sort" for="sort">Sort
+        <select class="in" id="sort"><option value="new">Newest</option><option value="low">Price, low to high</option><option value="high">Price, high to low</option></select></label>
+    </div>
+    <div class="filters" id="brands"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+<footer id="ftr"></footer>
+<script>
+let D, brand = "";
+function draw() {
+  const id = new URLSearchParams(location.search).get("c");
+  const cat = D.categories.find(c => c.id === id) || D.categories[0];
+  document.title = "1 OF 1 · " + cat.title;
+  renderHeader({ chips: D.categories.map(c => ({ title: c.title, href: "/category.html?c=" + c.id, on: c.id === cat.id })) });
+  document.getElementById("title").textContent = cat.title;
+  const brands = [...new Set(cat.items.map(i => i.brand))];
+  if (!brands.includes(brand)) brand = "";
+  document.getElementById("brands").innerHTML = ["", ...brands].map(b => `<button class="pill${b === brand ? " on" : ""}" data-b="${esc(b)}">${b ? esc(b) : "All houses"}</button>`).join("");
+  let items = cat.items.filter(i => !brand || i.brand === brand);
+  const s = document.getElementById("sort").value;
+  if (s === "low") items = [...items].sort((a, b) => a.price - b.price);
+  if (s === "high") items = [...items].sort((a, b) => b.price - a.price);
+  document.getElementById("count").textContent = items.length + " pieces · " + cat.subtitle;
+  const g = document.getElementById("grid");
+  g.innerHTML = items.map(cardHTML).join("") || '<p class="muted">Nothing here yet.</p>';
+  bindCards(g);
+}
+(async () => {
+  D = await loadProducts();
+  document.getElementById("sort").onchange = draw;
+  document.getElementById("brands").onclick = e => { const b = e.target.closest(".pill"); if (b) { brand = b.dataset.b; draw(); } };
+  draw();
+})();
+</script>
+</body>
+</html>

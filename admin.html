@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Admin</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<main class="gut">
+  <div class="narrow" id="gate" style="padding-top:48px">
+    <div><div class="eyebrow">Admin</div><h1 class="page-title">Orders</h1></div>
+    <form id="aform" novalidate style="display:flex;flex-direction:column;gap:24px">
+      <label class="f" for="pw">Admin password<input class="in" type="password" id="pw" autocomplete="current-password"></label>
+      <p class="err" id="aerr" aria-live="polite"></p>
+      <button class="btn wide" type="submit">Open dashboard</button>
+    </form>
+  </div>
+  <div id="dash" hidden style="display:flex;flex-direction:column;gap:26px;padding-top:36px">
+    <div class="cat-head" style="padding-top:0">
+      <div><div class="eyebrow">Admin</div><h1 class="page-title">Orders</h1></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <select class="in" id="filter" aria-label="Filter by status" style="width:auto;font-size:14px"><option value="">All orders</option><option value="new">New</option><option value="confirmed">Confirmed</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select>
+        <button class="btn ghost" id="refresh">Refresh</button><button class="btn ghost" id="logout">Lock</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="orders" id="orders"></div>
+  </div>
+</main>
+<footer id="ftr"></footer>
+<script>
+renderHeader();
+const ST = ["new", "confirmed", "delivered", "cancelled"];
+let ORD = [];
+const pw = () => { try { return sessionStorage.getItem("oo_admin") || ""; } catch { return ""; } };
+const api = (path, opt = {}) => fetch(path, { ...opt, headers: { "Content-Type": "application/json", Authorization: "Bearer " + pw(), ...(opt.headers || {}) } });
+async function load() {
+  const r = await api("/api/orders");
+  if (r.status === 401) { try { sessionStorage.removeItem("oo_admin"); } catch {} gate("Wrong password."); return; }
+  if (!r.ok) { document.getElementById("orders").innerHTML = `<p class="err">Couldn't load orders (${r.status}).</p>`; return; }
+  ORD = (await r.json()).orders; show(); draw();
+}
+function gate(msg) { document.getElementById("gate").hidden = false; document.getElementById("dash").hidden = true; document.getElementById("aerr").textContent = msg || ""; }
+function show() { document.getElementById("gate").hidden = true; document.getElementById("dash").hidden = false; }
+function draw() {
+  const f = document.getElementById("filter").value, list = ORD.filter(o => !f || o.status === f);
+  const live = ORD.filter(o => o.status !== "cancelled");
+  document.getElementById("stats").innerHTML = [
+    ["New", ORD.filter(o => o.status === "new").length], ["To deliver", ORD.filter(o => o.status === "confirmed").length],
+    ["Delivered", ORD.filter(o => o.status === "delivered").length], ["Order value", aed(live.reduce((s, o) => s + o.total_aed, 0))]
+  ].map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+  document.getElementById("orders").innerHTML = list.length ? list.map(o => {
+    const items = JSON.parse(o.items || "[]");
+    const when = new Date(o.created_at.replace(" ", "T") + "Z").toLocaleString("en-GB", { timeZone: "Asia/Dubai", dateStyle: "medium", timeStyle: "short" });
+    return `<div class="order">
+      <div class="top"><div><div style="font-size:18px">#${o.id} · ${esc(o.name)}</div><div class="muted" style="font-size:13px">${prettyPhone(o.phone)} · ${when}</div></div><span class="st ${esc(o.status)}">${esc(o.status)}</span></div>
+      <ul>${items.map(i => `<li>${esc(i.brand)} ${esc(i.name)} · ${aed(i.price)}</li>`).join("")}</ul>
+      <div class="muted" style="font-size:14px">${esc(o.delivery || "")}${o.note ? "<br>" + esc(o.note) : ""}</div>
+      <div class="top" style="align-items:center"><div style="font-size:20px;font-variant-numeric:tabular-nums">${aed(o.total_aed)}</div>
+        <div class="acts"><a class="btn ghost" style="min-height:40px" target="_blank" rel="noopener" href="https://wa.me/${esc(o.phone)}?text=${encodeURIComponent(`Hello ${o.name}, thank you for your 1 OF 1 order #${o.id}.`)}">WhatsApp</a>
+        <select class="in" data-id="${o.id}" aria-label="Status for order ${o.id}">${ST.map(s => `<option value="${s}"${s === o.status ? " selected" : ""}>${s[0].toUpperCase() + s.slice(1)}</option>`).join("")}</select></div></div>
+    </div>`;
+  }).join("") : '<div class="empty">No orders yet.</div>';
+}
+document.getElementById("aform").addEventListener("submit", e => {
+  e.preventDefault();
+  try { sessionStorage.setItem("oo_admin", document.getElementById("pw").value); } catch {}
+  load();
+});
+document.getElementById("orders").addEventListener("change", async e => {
+  const s = e.target.closest("select[data-id]"); if (!s) return;
+  const r = await api("/api/orders/" + s.dataset.id, { method: "PATCH", body: JSON.stringify({ status: s.value }) });
+  if (r.ok) { ORD.find(o => o.id == s.dataset.id).status = s.value; draw(); }
+  else s.insertAdjacentHTML("afterend", `<span class="err"> Couldn't save (${r.status})</span>`);
+});
+document.getElementById("filter").onchange = draw;
+document.getElementById("refresh").onclick = load;
+document.getElementById("logout").onclick = () => { try { sessionStorage.removeItem("oo_admin"); } catch {} gate(); };
+if (pw()) load(); else gate();
+</script>
+</body>
+</html>

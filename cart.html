@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Your bag</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<main class="gut">
+  <div class="narrow" style="max-width:620px;padding-top:40px">
+    <div><a class="back" href="/">← Keep browsing</a><h1 class="page-title" style="margin-top:14px">Your bag</h1></div>
+    <div id="list"></div>
+    <div id="checkout" hidden style="display:flex;flex-direction:column;gap:24px">
+      <div class="total"><span>Total</span><span id="total"></span></div>
+      <p class="muted" id="curNote" style="margin:-16px 0 0;font-size:13px"></p>
+      <label class="f" for="zone">Deliver to
+        <select class="in" id="zone"><option value="uae">United Arab Emirates · Same-day</option><option value="intl">Outside the UAE · Within a week</option></select></label>
+      <label class="f" for="addr">Address<textarea class="in" id="addr" rows="2" placeholder="Building, street, area, city (and country if outside the UAE)"></textarea></label>
+      <p class="muted" id="who" style="margin:0;font-size:14px"></p>
+      <p class="err" id="err" aria-live="polite"></p>
+      <button class="btn wide" id="place">Place order</button>
+      <p class="muted" style="margin:0;font-size:12px;line-height:1.7">UAE: pay by cash or card on delivery. Outside the UAE: we send a secure payment link on WhatsApp. Every order is confirmed with you before it ships.</p>
+    </div>
+    <div class="panel" id="done" hidden>
+      <div class="eyebrow">Order placed</div>
+      <div style="font-size:26px;font-weight:200" id="doneT"></div>
+      <p class="muted" style="margin:0">We'll message you on WhatsApp shortly to confirm delivery.</p>
+      <a class="btn" id="waBtn" target="_blank" rel="noopener">Message us on WhatsApp</a>
+      <a class="btn ghost" href="/">Back to the collection</a>
+    </div>
+  </div>
+</main>
+<footer id="ftr"></footer>
+<script>
+let D;
+function items() { return getCart().map(id => D.byId[id]).filter(i => i && !i.sold); }
+function draw() {
+  const its = items(), list = document.getElementById("list");
+  list.innerHTML = its.length ? its.map(it => `<div class="line"><a class="ph" href="/product.html?id=${encodeURIComponent(it.id)}">${media(it)}</a>
+      <div style="min-width:0"><div class="brandname">${esc(it.brand)}</div><div class="pname">${esc(it.name)}</div><button class="x" data-id="${esc(it.id)}">Remove</button></div>
+      <b style="font-weight:400;font-variant-numeric:tabular-nums">${money(it.price)}</b></div>`).join("")
+    : '<div class="empty">Your bag is empty.<a class="btn" href="/">Browse the collection</a></div>';
+  document.getElementById("checkout").hidden = !its.length;
+  const sum = its.reduce((s, i) => s + i.price, 0);
+  document.getElementById("total").textContent = money(sum);
+  document.getElementById("curNote").textContent = getCur() !== "AED" ? `Approximate. You pay ${aed(sum)}.` : "";
+  const u = getUser();
+  document.getElementById("who").innerHTML = u ? `Ordering as <span style="color:var(--ivory)">${esc(u.name)}</span> · ${prettyPhone(u.phone)} · <a href="/login.html" style="color:var(--champagne)">change</a>` : "Next, sign in with your name and number.";
+  document.getElementById("place").textContent = u ? "Place order" : "Sign in to order";
+  return its;
+}
+(async () => {
+  D = await loadProducts(); renderHeader(); draw();
+  document.getElementById("list").onclick = e => { const b = e.target.closest(".x"); if (b) { setCart(getCart().filter(x => x !== b.dataset.id)); draw(); } };
+  document.getElementById("place").onclick = async () => {
+    const u = getUser();
+    if (!u) { location.href = "/login.html?next=cart"; return; }
+    const its = draw(), err = document.getElementById("err"), btn = document.getElementById("place");
+    const addr = document.getElementById("addr").value.trim();
+    if (addr.length < 5) { err.textContent = "Add your delivery address."; return; }
+    const zone = document.getElementById("zone");
+    btn.disabled = true; btn.textContent = "Placing…"; err.textContent = "";
+    try {
+      const r = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: u.name, phone: u.phone, delivery: zone.options[zone.selectedIndex].text, note: addr, items: its.map(i => i.id) }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(j.error || "Server error " + r.status);
+      setCart([]);
+      document.getElementById("list").hidden = true; document.getElementById("checkout").hidden = true;
+      document.getElementById("done").hidden = false;
+      document.getElementById("doneT").textContent = `Order #${j.id} · ${aed(j.total)}`;
+      const msg = encodeURIComponent(`Hello 1 OF 1, I just placed order #${j.id} (${aed(j.total)}).`);
+      document.getElementById("waBtn").href = `https://wa.me/${STORE.whatsapp}?text=${msg}`;
+    } catch (e) {
+      err.textContent = "Couldn't place the order (" + e.message + "). Try again, or message us on WhatsApp.";
+      btn.disabled = false; btn.textContent = "Place order";
+    }
+  };
+})();
+</script>
+</body>
+</html>

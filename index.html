@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Pre-loved Luxury, Dubai</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<div class="gut">
+  <div class="intro">
+    <h1>Rare pieces. <em>Each one</em> the only one.</h1>
+    <p>Authenticated watches, handbags and jewellery from the houses that matter. Can't see it here? Message us, we'll find it.</p>
+  </div>
+</div>
+<main class="gut" id="main"><p class="muted">Loading pieces…</p></main>
+<footer id="ftr"></footer>
+<script>
+(async () => {
+  const d = await loadProducts();
+  renderHeader({ search: true, chips: d.categories.map(c => ({ title: c.title, href: "#" + c.id })) });
+  const main = document.getElementById("main"); main.innerHTML = "";
+  d.categories.forEach(c => {
+    const s = document.createElement("section"); s.className = "shelf"; s.id = c.id;
+    s.innerHTML = `<div class="head"><div><h2>${esc(c.title)}</h2><small>${c.items.length} pieces · ${esc(c.subtitle)}</small></div>
+      <div class="ctrl"><a class="all" href="/category.html?c=${c.id}">View all</a>
+      <button class="arrow" data-d="-1" aria-label="Scroll ${esc(c.title)} left">${sv(I.left, 16)}</button>
+      <button class="arrow" data-d="1" aria-label="Scroll ${esc(c.title)} right">${sv(I.right, 16)}</button></div></div>
+      <div class="row">${c.items.map(cardHTML).join("")}</div>`;
+    main.appendChild(s);
+    const row = s.querySelector(".row"), [l, r] = s.querySelectorAll(".arrow");
+    const upd = () => { l.disabled = row.scrollLeft < 4; r.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4; };
+    [l, r].forEach(a => a.onclick = () => row.scrollBy({ left: a.dataset.d * row.clientWidth * .85 }));
+    row.addEventListener("scroll", upd, { passive: true }); requestAnimationFrame(upd); addEventListener("resize", upd);
+  });
+  bindCards(main);
+  document.getElementById("q").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase().trim();
+    main.querySelectorAll(".card").forEach(c => c.hidden = q && !c.textContent.toLowerCase().includes(q));
+    main.querySelectorAll(".shelf").forEach(s => s.hidden = q && !s.querySelector(".card:not([hidden])"));
+  });
+})();
+</script>
+</body>
+</html>

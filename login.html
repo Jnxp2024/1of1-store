@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1 OF 1 · Sign in</title>
+<meta name="description" content="1 OF 1 — authenticated pre-loved watches, handbags and jewellery from Dubai. Same-day delivery in the UAE, worldwide within a week.">
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<script src="/assets/app.js"></script>
+</head>
+<body>
+<header id="hdr"></header>
+<main class="gut">
+  <div class="narrow" style="padding-top:48px">
+    <div><div class="eyebrow" id="eb">Sign in</div><h1 class="page-title" id="h">Your name and number</h1>
+    <p class="muted" id="p">No password. We use your number to confirm orders on WhatsApp.</p></div>
+    <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
+      <label class="f" for="name">Full name<input class="in" type="text" id="name" autocomplete="name" placeholder="Sara Ahmed"></label>
+      <label class="f" for="phone">Mobile number<input class="in" type="tel" id="phone" inputmode="tel" autocomplete="tel" placeholder="050 123 4567 or +44 …"></label>
+      <p class="err" id="err" aria-live="polite"></p>
+      <button class="btn wide" type="submit">Continue</button>
+    </form>
+    <div id="me" hidden style="display:flex;flex-direction:column;gap:18px">
+      <div class="panel"><div><div class="eyebrow">Signed in as</div><div style="font-size:22px;margin-top:6px" id="meName"></div><div class="muted" id="mePhone"></div></div></div>
+      <a class="btn wide" href="/cart.html">Go to your bag</a>
+      <button class="btn ghost wide" id="out" type="button">Sign out</button>
+    </div>
+  </div>
+</main>
+<footer id="ftr"></footer>
+<script>
+function show() {
+  const u = getUser();
+  renderHeader();
+  document.getElementById("form").hidden = !!u;
+  document.getElementById("me").hidden = !u;
+  document.getElementById("p").hidden = !!u;
+  document.getElementById("h").textContent = u ? "Welcome back" : "Your name and number";
+  if (u) { document.getElementById("meName").textContent = u.name; document.getElementById("mePhone").textContent = prettyPhone(u.phone); }
+}
+document.getElementById("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = document.getElementById("name").value.trim();
+  const phone = normPhone(document.getElementById("phone").value);
+  const err = document.getElementById("err");
+  if (name.length < 2) { err.textContent = "Enter your full name."; return; }
+  if (!phone) { err.textContent = "Enter a valid mobile number, for example 050 123 4567."; return; }
+  err.textContent = ""; setUser({ name, phone });
+  const next = new URLSearchParams(location.search).get("next");
+  if (next === "cart") location.href = "/cart.html"; else show();
+});
+document.getElementById("out").onclick = () => { setUser(null); show(); };
+show();
+</script>
+</body>
+</html>
