@@ -3,7 +3,7 @@ const ORDER_STATUS = {
   pending: "Pending", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled",
   new: "Pending", confirmed: "Shipped" // older rows
 };
-const PAID_LABEL = { cash: "Cash", card: "Card at the door", online: "Online payment", applepay: "Apple Pay" };
+const PAID_LABEL = { cash: "Cash", card: "Card at the door", online: "Online payment", applepay: "Apple Pay", crypto: "Crypto" };
 
 function statusLabel(s) { return ORDER_STATUS[s] || s; }
 

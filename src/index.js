@@ -5,7 +5,7 @@ import { serveSite } from "./seo.js";
 // Secret set in the dashboard: ADMIN_PASSWORD.
 
 const STATUSES = ["pending", "shipped", "delivered", "cancelled"];
-const PAID_METHODS = ["cash", "card", "online", "applepay"];
+const PAID_METHODS = ["cash", "card", "online", "applepay", "crypto"];
 const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
 // Loyalty: every AED 5,000 of delivered spend earns one 10% coupon for a future order.
 const LOYALTY_STEP = 5000, LOYALTY_DISCOUNT = 0.10;

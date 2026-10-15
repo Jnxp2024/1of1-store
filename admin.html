@@ -47,7 +47,7 @@
 <script>
 renderHeader();
 const ST = ["pending", "shipped", "delivered", "cancelled"];
-const PM = [["", "Not paid yet"], ["cash", "Paid · Cash"], ["card", "Paid · Card at door"], ["online", "Paid · Online payment"], ["applepay", "Paid · Apple Pay"]];
+const PM = [["", "Not paid yet"], ["cash", "Paid · Cash"], ["card", "Paid · Card at door"], ["online", "Paid · Online payment"], ["applepay", "Paid · Apple Pay"], ["crypto", "Paid · Crypto"]];
 let ORD = [];
 const pw = () => { try { return sessionStorage.getItem("oo_admin") || ""; } catch { return ""; } };
 const api = (path, opt = {}) => fetch(path, { ...opt, headers: { "Content-Type": "application/json", Authorization: "Bearer " + pw(), ...(opt.headers || {}) } });
