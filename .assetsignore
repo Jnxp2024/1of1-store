@@ -1,0 +1,7 @@
+.git
+.assetsignore
+src
+functions
+wrangler.jsonc
+README.md
+node_modules

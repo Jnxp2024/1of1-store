@@ -1,6 +1,6 @@
 # 1 OF 1 — store
 
-Static site + Cloudflare Pages Functions. Every push to `main` deploys automatically.
+Static site + a Cloudflare Worker (`src/index.js`) for the order API. Every push to `main` deploys automatically (Workers Builds).
 
 - `index.html` — home, categories as swipeable rows
 - `category.html?c=watches` — all pieces in a category, filter by house, sort by price
@@ -9,7 +9,7 @@ Static site + Cloudflare Pages Functions. Every push to `main` deploys automatic
 - `cart.html` — bag and checkout
 - `admin.html` — orders (password = `ADMIN_PASSWORD`)
 - `products.json` — every product. Add `"image": "/images/xxx.jpg"`, set `"sold": true` when sold.
-- `functions/api/` — order API, stored in D1
+- `src/index.js` — order API, stored in D1 (binding `DB` in `wrangler.jsonc`)
 
-Cloudflare Pages settings: build command none, output directory `/`.
-Bindings: D1 `DB` → `oneofone-store`. Variable (secret): `ADMIN_PASSWORD`.
+Secret to set in the Worker's Settings → Variables and Secrets: `ADMIN_PASSWORD`.
+Site is `noindex` (hidden from Google) until launch — remove `X-Robots-Tag` in `_headers` to go public.

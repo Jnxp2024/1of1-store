@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "1of1-store",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-12",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "oneofone-store", "database_id": "09f223a1-37de-499c-a9b5-998c8a4d1ab2" }
+  ]
+}
