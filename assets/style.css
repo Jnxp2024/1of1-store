@@ -469,3 +469,23 @@ label.mini .in{width:auto;font-size:14px;letter-spacing:normal;text-transform:no
 .rw-bar{height:4px;background:var(--hair-2);overflow:hidden}.rw-bar i{display:block;height:100%;background:var(--champagne)}
 .rw-foot{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--ivory);flex-wrap:wrap}
 .reward p{margin:0;font-size:12.5px;line-height:1.6}
+
+/* membership levels */
+.lv-card{position:relative;overflow:hidden;padding:22px 22px 18px;border-radius:14px;color:#14110d;display:flex;flex-direction:column;gap:8px;
+  background:linear-gradient(150deg,var(--l1),var(--l2));box-shadow:0 24px 50px -24px rgba(0,0,0,.8)}
+.lv-card::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.3) 45%,transparent 60%);background-size:250% 100%;animation:sheen 6s ease-in-out infinite;pointer-events:none}
+.lv-ivory{--l1:#f4efe6;--l2:#cfc6b6}.lv-silver{--l1:#f1f2f2;--l2:#9fa3a6}.lv-gold{--l1:#f0dfb8;--l2:#b08a52}
+.lv-plat{--l1:#e8eef0;--l2:#8aa2ab}.lv-diamond{--l1:#e6f3ff;--l2:#8fb4dc}
+.lv-black{--l1:#3a3631;--l2:#0b0a09;color:var(--ivory)}.lv-one{--l1:#2a2218;--l2:#0b0a09;color:var(--champagne-hi);border:1px solid var(--champagne)}
+.lv-top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.24em;text-transform:uppercase;opacity:.75}
+.lv-n{font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-top:10px}
+.lv-name{font-weight:200;font-size:44px;line-height:1}
+.lv-card .rw-bar{background:rgba(0,0,0,.15);margin-top:8px}.lv-card .rw-bar i{background:currentColor}
+.lv-card .rw-foot{color:inherit;font-size:12.5px}
+.ladder{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:14px 0 4px}
+.ladder span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory-faint);padding-top:8px;border-top:2px solid var(--hair-2);text-align:center}
+.ladder span b{font-weight:300;font-size:15px;letter-spacing:0}
+.ladder span.on{color:var(--ivory-dim);border-top-color:var(--champagne)}
+.ladder span.now{color:var(--champagne)}
+.ladder span{white-space:nowrap}
+.reward{border:0;padding:0}

@@ -9,7 +9,7 @@ const PAID_METHODS = ["cash", "card", "online", "applepay"];
 const FIRST_ORDER_DISCOUNT = 0.15; // 15% off a customer's first order (by phone number)
 // Loyalty: every AED 5,000 of delivered spend earns one 15% coupon for a future order.
 const LOYALTY_STEP = 5000, LOYALTY_DISCOUNT = 0.15;
-const DISCOUNT_LABEL = { welcome: "Welcome 15% · first order", loyalty: "Loyalty 15% · AED 5,000 reward" };
+const DISCOUNT_LABEL = { welcome: "Welcome 15% · first order", loyalty: "Level-up reward · 15% off" };
 
 // Where a customer stands: welcome bonus, loyalty coupons earned/used/available, progress.
 async function rewards(env, phone) {

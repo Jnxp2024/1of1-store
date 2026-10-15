@@ -26,7 +26,7 @@
   <div class="narrow" id="signin" style="padding-top:48px">
     <div><div class="eyebrow" id="eb">Sign in or create account</div><h1 class="page-title" id="h">Welcome to 1 OF 1</h1>
     <p class="muted" id="sub">Enter your mobile number. We'll check if you already have an account.</p></div>
-    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout. Then every AED 5,000 you spend earns another 15% off.</div></div>
+    <div class="promo" id="promo"><b>15%</b><div><strong>Off your first order</strong>Create your account and the discount is applied automatically at checkout. Then level up every AED 5,000 you spend, and every new level unlocks another 15% off.</div></div>
     <form id="form" novalidate style="display:flex;flex-direction:column;gap:26px">
       <div class="f"><label for="phone">Mobile number</label>
         <div id="phoneHost"></div>
@@ -142,11 +142,17 @@ async function loadAccount() {
     .map(([l, v]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
   const rw = j.rewards;
   if (rw) {
+    const LV = [["Ivory", "ivory"], ["Silver", "silver"], ["Gold", "gold"], ["Platinum", "plat"], ["Diamond", "diamond"], ["Black", "black"], ["1 OF 1", "one"]];
+    const lvl = rw.earned + 1, at = Math.min(lvl, LV.length) - 1, nx = Math.min(lvl + 1, LV.length) - 1;
     const into = rw.spent % 5000, pct = Math.round(into / 50);
-    $("reward").innerHTML = `<div class="rw-top"><span>Loyalty rewards</span><b>${rw.available} ${rw.available === 1 ? "coupon" : "coupons"} ready</b></div>
-      <div class="rw-bar"><i style="width:${pct}%"></i></div>
-      <div class="rw-foot"><span>${money(into)} of ${money(5000)}</span><span>${money(rw.toNext)} more to your next 15% off</span></div>
-      <p class="muted">Every AED 5,000 you spend on delivered orders earns a 15% coupon. It's applied automatically to your next order, one coupon per order.</p>`;
+    $("reward").innerHTML = `<div class="lv-card lv-${LV[at][1]}">
+        <div class="lv-top"><span>1 OF 1 · Membership</span><span>${rw.available} × 15% ready</span></div>
+        <div class="lv-n">Level ${lvl}</div><div class="lv-name">${LV[at][0]}</div>
+        <div class="rw-bar"><i style="width:${pct}%"></i></div>
+        <div class="rw-foot"><span>${money(into)} / ${money(5000)}</span><span>${money(rw.toNext)} to Level ${lvl + 1} · ${LV[nx][0]}</span></div>
+      </div>
+      <div class="ladder">${LV.map(([n, k], i) => `<span class="${i < lvl ? "on" : ""}${i === at ? " now" : ""}"><b>${i === LV.length - 1 ? "7+" : i + 1}</b>${n}</span>`).join("")}</div>
+      <p class="muted">Level up every AED 5,000 you spend on delivered orders. Every new level unlocks 15% off, applied automatically to your next order, one per order.</p>`;
   }
   $("coupons").innerHTML = j.coupons.map(c => `<div class="coupon${c.active ? "" : " used"}">
       <div class="pct">${c.percent}%</div>
