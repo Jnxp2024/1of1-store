@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="/assets/style.css">
 <script src="/assets/app.js"></script>
 <script src="/assets/phone.js"></script>
+<script src="/assets/paddock-data.js"></script>
 </head>
 <body>
 <header id="hdr"></header>
@@ -52,6 +53,13 @@
     const upd = () => { l.disabled = row.scrollLeft < 4; r.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4; };
     [l, r].forEach(a => a.onclick = () => row.scrollBy({ left: a.dataset.d * row.clientWidth * .85 }));
     row.addEventListener("scroll", upd, { passive: true }); requestAnimationFrame(upd); addEventListener("resize", upd);
+    if (c === cats[0]) {
+      const pick = ["ae-2009", "us-2023", "qa-2004"].map(id => PADDOCK_RACES.find(r => r.id === id));
+      main.insertAdjacentHTML("beforeend", `<a class="pad-tease" href="/paddock.html">
+        <div><span class="soon">Coming soon</span><h2>F1 Paddock <em>tickets.</em></h2>
+        <p>Paddock Club, team suites and pit-lane garages for Abu Dhabi, Las Vegas, Qatar and the rest of the 2026 season.</p><span class="go">Explore the paddock →</span></div>
+        <div class="maps" aria-hidden="true">${pick.map((r, k) => `<svg viewBox="${r.vb}" style="--i:${k}" class="tmap"><path d="${r.d}" class="trk-base"/><path d="${r.d}" class="trk-line" pathLength="1"/></svg>`).join("")}</div></a>`);
+    }
   });
   bindCards(main);
   const q = document.getElementById("q"), intro = document.querySelector(".intro").parentElement, res = document.getElementById("results");

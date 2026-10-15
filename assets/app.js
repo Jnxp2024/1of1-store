@@ -190,7 +190,7 @@ function renderHeader(opts = {}) {
         <a class="icon-btn" href="/cart.html" aria-label="Your bag">${sv(I.bag, 20)}<span class="n" id="bagN" hidden>0</span></a>
       </div>
     </div>
-    ${opts.chips ? `<nav class="chips" aria-label="Categories">${opts.chips.map(c => `<a href="${c.href}"${c.on ? ' class="on"' : ""}>${esc(c.title)}</a>`).join("")}</nav>` : ""}
+    ${opts.chips ? `<nav class="chips" aria-label="Categories">${opts.chips.map(c => `<a href="${c.href}"${c.on ? ' class="on"' : ""}>${esc(c.title)}</a>`).join("")}<a href="/paddock.html" class="pad-chip${opts.paddock ? " on" : ""}">F1 Paddock <sup>Soon</sup></a></nav>` : ""}
   </div>`;
   if (matchMedia("(max-width:760px)").matches) document.getElementById("acct").style.display = "grid";
   document.getElementById("cur").onchange = e => { store.set("oo_cur", e.target.value); location.reload(); };
